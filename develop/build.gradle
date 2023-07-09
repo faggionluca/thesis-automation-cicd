@@ -13,35 +13,39 @@ plugins {
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
+  // Use Maven Central for resolving dependencies.
+  mavenCentral()
 }
 
 dependencies {
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    
-    // Use JUnit Jupiter for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    // This dependency is used by the application.
-    //implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'com.github.docker-java:docker-java:3.3.1'
-    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.1'
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf
+  implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.1.1'
 
-    implementation 'org.jgrapht:jgrapht-core:1.5.1'
-    // https://mvnrepository.com/artifact/com.github.vlsi.mxgraph/jgraphx
-    implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
-    implementation 'org.jgrapht:jgrapht-ext:1.5.1'
+
+  // Use JUnit Jupiter for testing.
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+
+  // This dependency is used by the application.
+  //implementation 'com.google.guava:guava:31.1-jre'
+  implementation 'com.github.docker-java:docker-java:3.3.1'
+  implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.1'
+
+  implementation 'org.jgrapht:jgrapht-core:1.5.1'
+  // https://mvnrepository.com/artifact/com.github.vlsi.mxgraph/jgraphx
+  implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
+  implementation 'org.jgrapht:jgrapht-ext:1.5.1'
 
 }
 
 // application {
-//     // Define the main class for the application.
-//     mainClassName = 'com.lucafaggion.thesis.develop.App'
+//   // Define the main class for the application.
+//   mainClassName = 'com.lucafaggion.thesis.develop.App'
 // }
 
 tasks.named('test') {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+  // Use JUnit Platform for unit tests.
+  useJUnitPlatform()
 }

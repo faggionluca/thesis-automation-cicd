@@ -42,6 +42,10 @@ public class RunnableGraph {
     imgFile.createNewFile();
   }
 
+  public void fromConfig(File config) throws IOException {
+    
+  }
+
   public void createGraph() {
     
     Graph<ListenableFutureTask<String>, RunnableGraphEdge> future_g = new DirectedAcyclicGraph<>(
