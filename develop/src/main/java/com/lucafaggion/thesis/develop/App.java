@@ -6,9 +6,17 @@ package com.lucafaggion.thesis.develop;
 import java.io.IOException;
 // import java.util.*;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -22,12 +30,41 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import com.lucafaggion.thesis.develop.graph.RunnableGraph;
 
+
+@SpringBootApplication
 public class App {
   public String getGreeting() {
     return "Hello World!";
   }
+  
+  public static void main(String[] args) {
+    SpringApplication.run(App.class, args);
+	}
+  
+  // https://mkyong.com/spring-boot/how-to-display-all-beans-loaded-by-spring-boot/#:~:text=In%20Spring%20Boot%2C%20you%20can,loaded%20by%20the%20Spring%20container.
+  @Bean
+  public CommandLineRunner run(ApplicationContext appContext) {
+      return args -> {
+  
+          String[] beans = appContext.getBeanDefinitionNames();
+          for (String bean : beans) {
+            System.out.println(bean + " of Type :: " + appContext.getBean(bean).getClass());
+          }
+          // Arrays.stream(beans).sorted().forEach(System.out::println);
+      };
+  }
 
-  public static void main(String[] args) throws IOException {
+  @Bean
+  public CommandLineRunner taskRun(ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+    return args -> {
+      RunnableGraph graph = new RunnableGraph(threadPoolTaskExecutor.getThreadPoolExecutor());
+      graph.createGraph();
+      graph.performRunnableTraversal();
+      System.out.println(getGreeting());
+    };
+  }
+
+  public static void test(String[] args) throws IOException {
     // System.out.println(new App().getGreeting());
     // DockerClientConfig config =
     // DefaultDockerClientConfig.createDefaultConfigBuilder().build();
@@ -47,16 +84,14 @@ public class App {
     // System.out.println("Docker Not responding");
     // }
 
-    ExecutorService execService = Executors.newSingleThreadExecutor();
+    ExecutorService execService = Executors.newFixedThreadPool(4);
     // ListeningExecutorService lExecService =
     // MoreExecutors.listeningDecorator(execService);
 
     RunnableGraph graph = new RunnableGraph(execService);
     graph.createGraph();
-    graph.print();
-    graph.performTraversal();
+    // graph.print();
+    // graph.performTraversal();
     graph.performRunnableTraversal();
-
-    // execService.shutdown();
   }
 }
