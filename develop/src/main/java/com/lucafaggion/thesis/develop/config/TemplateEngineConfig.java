@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 @Configuration
 public class TemplateEngineConfig {
@@ -17,6 +18,15 @@ public class TemplateEngineConfig {
     resolver.setTemplateMode("TEXT");
     resolver.setCharacterEncoding("UTF-8");
     resolver.setOrder(2);
+    resolver.setCheckExistence(true);
+    return resolver;
+  }
+
+  @Bean
+  StringTemplateResolver stringTemplateResolver() {
+    StringTemplateResolver resolver = new StringTemplateResolver();
+    resolver.setTemplateMode("TEXT");
+    resolver.setOrder(3);
     resolver.setCheckExistence(true);
     return resolver;
   }
