@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
+import org.jgrapht.Graph;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -40,6 +41,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import com.lucafaggion.thesis.develop.graph.RunnableGraph;
+import com.lucafaggion.thesis.develop.graph.RunnableGraphEdge;
+import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.service.RunnableGraphService;
 import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
 
@@ -127,7 +130,8 @@ public class App {
       templateWriterPlain.close();
 
       //Create a graph
-      runnableGraphService.createAcyclicGraphFromConfig(compiledTemplate);
+      Graph<RunnerJob, RunnableGraphEdge> graph = runnableGraphService.createAcyclicGraphFromConfig(compiledTemplate);
+      runnableGraphService.saveGraphToImage(graph, "src/main/resources/runnerjob_graph.png");
     };
   };
   

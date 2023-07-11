@@ -1,10 +1,8 @@
 package com.lucafaggion.thesis.develop.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class RunnerJobStep {
   private String run;
   private String name;

@@ -1,9 +1,7 @@
 name: GitHub Actions Demo
-run-name: "[(${name})], is testing out GitHub Actions" 🚀
 on: [push]
 jobs:
   Explore-GitHub-Actions:
-    runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -16,3 +14,20 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+  Dependent-Task1:
+    depends-on: Explore-GitHub-Actions
+    steps:
+      - run: echo "🎉 Running a simple job"
+      - run: echo "🐧 Another Task"
+  Dependent-Task2:
+    depends-on: [Dependent-Task1]
+    steps:
+      - run: echo "🎉 I'm depending on task 1"
+  Dependent-Task3:
+    depends-on: [Dependent-Task1]
+    steps:
+      - run: echo "🎉 I'm depending on task 1"
+  Final-task:
+    depends-on: [Dependent-Task2, Dependent-Task3]
+    steps:
+      - run: echo "🎉 I'm depending on task 2 and task 3"
