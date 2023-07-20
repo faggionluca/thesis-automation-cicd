@@ -42,7 +42,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import com.lucafaggion.thesis.develop.graph.RunnableGraph;
 import com.lucafaggion.thesis.develop.graph.RunnableGraphEdge;
+import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
+import com.lucafaggion.thesis.develop.service.DockerContainerActionsService;
 import com.lucafaggion.thesis.develop.service.RunnableGraphService;
 import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
 
@@ -71,7 +73,6 @@ public class App {
     };
   }
 
-
   @Bean
   public CommandLineRunner templateEngineTest(SpringTemplateEngine templateEngine) throws IOException {
     return args -> {
@@ -89,30 +90,30 @@ public class App {
 
       FileWriter templateWriterText = new FileWriter("src/main/resources/configs/testconfig_compiled_fromtext.yaml");
       String template = """
-        name: GitHub Actions Demo
-        on: [push]
-        jobs:
-          Explore-GitHub-Actions:
-            steps:
-              - run: echo \"🎉 The job was automatically triggered by a ${{ github.event_name }} event.\"
-              - run: echo \"🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!\"
-              - run: echo \"🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}.\"
-              - name: Check out repository code
-                uses: actions/checkout@v3
-              - run: echo \"💡 The [(${user.name})] repository has been cloned to the runner.\"
-              - run: echo \"🖥️ The workflow is now ready to test your code on the runner.\"
-              - name: List files in the repository
-                run: |
-                  ls ${{ github.workspace }}
-              - run: echo \"🍏 This job's status is ${{ job.status }}.\"
-            """;
+          name: GitHub Actions Demo
+          on: [push]
+          jobs:
+            Explore-GitHub-Actions:
+              steps:
+                - run: echo \"🎉 The job was automatically triggered by a ${{ github.event_name }} event.\"
+                - run: echo \"🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!\"
+                - run: echo \"🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}.\"
+                - name: Check out repository code
+                  uses: actions/checkout@v3
+                - run: echo \"💡 The [(${user.name})] repository has been cloned to the runner.\"
+                - run: echo \"🖥️ The workflow is now ready to test your code on the runner.\"
+                - name: List files in the repository
+                  run: |
+                    ls ${{ github.workspace }}
+                - run: echo \"🍏 This job's status is ${{ job.status }}.\"
+              """;
       templateEngine.process(template, templateContext, templateWriterText);
     };
   }
 
-
   @Bean
-  public CommandLineRunner templateEngineClasses(RunnerTaskConfigService runnerTaskConfigService, RunnableGraphService runnableGraphService) throws IOException {
+  public CommandLineRunner templateEngineClasses(RunnerTaskConfigService runnerTaskConfigService,
+      RunnableGraphService runnableGraphService) throws IOException {
     return args -> {
 
       HashMap<String, Object> user = new HashMap<String, Object>();
@@ -129,12 +130,12 @@ public class App {
       templateWriterPlain.write(compiledTemplate);
       templateWriterPlain.close();
 
-      //Create a graph
-      Graph<RunnerJob, RunnableGraphEdge> graph = runnableGraphService.createAcyclicGraphFromConfig(compiledTemplate);
+      // Create a graph
+      Graph<RunnerAction, RunnableGraphEdge> graph = runnableGraphService
+          .createAcyclicGraphFromConfig(compiledTemplate);
       runnableGraphService.saveGraphToImage(graph, "src/main/resources/runnerjob_graph.png");
     };
   };
-  
 
   @Bean
   public CommandLineRunner taskRun(ThreadPoolTaskExecutor threadPoolTaskExecutor) {
@@ -147,26 +148,10 @@ public class App {
   }
 
   @Bean
-  public CommandLineRunner test(ApplicationContext appContext) throws IOException {
+  public CommandLineRunner testDocker(ApplicationContext appContext, DockerContainerActionsService dockerActionservice)
+      throws IOException {
     return args -> {
-      // System.out.println(new App().getGreeting());
-      // DockerClientConfig config =
-      // DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-      // DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
-      // .dockerHost(config.getDockerHost())
-      // .sslConfig(config.getSSLConfig())
-      // .maxConnections(100)
-      // .connectionTimeout(Duration.ofSeconds(5))
-      // .responseTimeout(Duration.ofSeconds(5))
-      // .build();
-      // DockerClient client = DockerClientImpl.getInstance(config, httpClient);
-      // try {
-      // client.pingCmd().exec();
-      // List<Image> images = client.listImagesCmd().exec();
-      // System.out.println("Docker is responding");
-      // } catch (Exception e) {
-      // System.out.println("Docker Not responding");
-      // }
+      dockerActionservice.runActionInContainer(null);
     };
   }
 }

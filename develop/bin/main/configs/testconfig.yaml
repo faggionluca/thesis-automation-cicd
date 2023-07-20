@@ -15,7 +15,7 @@ jobs:
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
   Dependent-Task1:
-    depends-on: Explore-GitHub-Actions
+    depends-on: [Explore-GitHub-Actions]
     steps:
       - run: echo "🎉 Running a simple job"
       - run: echo "🐧 Another Task"

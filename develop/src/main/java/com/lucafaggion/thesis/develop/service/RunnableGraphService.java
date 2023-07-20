@@ -2,14 +2,14 @@ package com.lucafaggion.thesis.develop.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
-import org.bouncycastle.eac.EACCertificateRequestHolder;
 import org.jgrapht.Graph;
 import org.jgrapht.ext.JGraphXAdapter;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.util.concurrent.ListenableFutureTask;
 import com.lucafaggion.thesis.develop.graph.RunnableGraphEdge;
+import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.mxgraph.layout.mxCompactTreeLayout;
@@ -37,9 +37,9 @@ public class RunnableGraphService {
   @Autowired
   private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-  public Graph<RunnerJob, RunnableGraphEdge> createAcyclicGraphFromConfig(String compiledConfig)
+  public Graph<RunnerAction, RunnableGraphEdge> createAcyclicGraphFromConfig(String compiledConfig)
       throws JsonMappingException, JsonProcessingException {
-    Graph<RunnerJob, RunnableGraphEdge> future_g = new DirectedAcyclicGraph<>(
+    Graph<RunnerAction, RunnableGraphEdge> future_g = new DirectedAcyclicGraph<>(
         RunnableGraphEdge.class);
 
     // Deserialize the YAML config file into a RunnerTaskConfig
@@ -47,22 +47,33 @@ public class RunnableGraphService {
     mapper.registerModule(new Jdk8Module());
     RunnerTaskConfig runnerTaskConfig = mapper.readValue(compiledConfig, RunnerTaskConfig.class);
 
-    // Construct the acyclic graph
-    // Fist lets add all the vertex
     for (Entry<String, RunnerJob> jobEntry : runnerTaskConfig.getJobs().entrySet()) {
       jobEntry.getValue().setName(jobEntry.getKey()); // Set the name of the job
-      future_g.addVertex(jobEntry.getValue());
     }
 
-    for (RunnerJob job : future_g.vertexSet()) {
-      for (String dependsOn : job.getDependsOn()) {
-        RunnerJob dependJob = future_g.vertexSet()
+    // Create the array of callable jobs
+    List<RunnerAction> actions = runnerTaskConfig.getJobs().values()
+        .stream()
+        .map((job) -> new RunnerAction(job))
+        .collect(Collectors.toList());
+
+    
+    // Construct the acyclic graph
+    // Fist lets add all the vertex
+    for (RunnerAction runnerAction : actions) {
+      future_g.addVertex(runnerAction);
+    }
+
+    // Creates all the directed vertex edges
+    for (RunnerAction runnerAction : future_g.vertexSet()) {
+      for (String dependsOn : runnerAction.getJob().getDependsOn()) {
+        RunnerAction dependJob = future_g.vertexSet()
             .stream()
-            .filter(vertex -> dependsOn.equals(vertex.getName()))
+            .filter(vertex -> dependsOn.equals(vertex.getJob().getName()))
             .findFirst()
             .orElse(null);
         if (dependJob != null) {
-          future_g.addEdge(dependJob, job);
+          future_g.addEdge(dependJob, runnerAction);
         }
       }
     }

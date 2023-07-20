@@ -37,6 +37,7 @@ dependencies {
   //implementation 'com.google.guava:guava:31.1-jre'
   implementation 'com.github.docker-java:docker-java:3.3.1'
   implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.1'
+  implementation 'org.apache.httpcomponents.core5:httpcore5-h2:5.2.2'
 
   implementation 'org.jgrapht:jgrapht-core:1.5.1'
   // https://mvnrepository.com/artifact/com.github.vlsi.mxgraph/jgraphx
