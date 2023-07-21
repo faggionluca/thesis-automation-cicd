@@ -13,11 +13,11 @@ runnableGraphService of Type :: class com.lucafaggion.thesis.develop.service.Run
 runnerTaskConfigService of Type :: class com.lucafaggion.thesis.develop.service.RunnerTaskConfigService
 secondaryTemplateResolver of Type :: class org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver
 stringTemplateResolver of Type :: class org.thymeleaf.templateresolver.StringTemplateResolver
-run of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$610/0x0000000801381e00
-templateEngineTest of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$611/0x0000000801382028
-templateEngineClasses of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$612/0x0000000801382250
-taskRun of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$613/0x0000000801382478
-testDocker of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$614/0x00000008013826a0
+run of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$610/0x0000000801382d18
+templateEngineTest of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$611/0x0000000801382f40
+templateEngineClasses of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$612/0x0000000801383168
+taskRun of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$613/0x0000000801383390
+testDocker of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$614/0x00000008013835b8
 org.springframework.boot.autoconfigure.AutoConfigurationPackages of Type :: class org.springframework.boot.autoconfigure.AutoConfigurationPackages$BasePackages
 org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration
 propertySourcesPlaceholderConfigurer of Type :: class org.springframework.context.support.PropertySourcesPlaceholderConfigurer
@@ -27,7 +27,7 @@ sslBundleRegistry of Type :: class org.springframework.boot.ssl.DefaultSslBundle
 org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor of Type :: class org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor
 org.springframework.boot.context.internalConfigurationPropertiesBinder of Type :: class org.springframework.boot.context.properties.ConfigurationPropertiesBinder
 org.springframework.boot.context.properties.BoundConfigurationProperties of Type :: class org.springframework.boot.context.properties.BoundConfigurationProperties
-org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter of Type :: class org.springframework.boot.validation.beanvalidation.MethodValidationExcludeFilter$$Lambda$615/0x00000008013828c8
+org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter of Type :: class org.springframework.boot.validation.beanvalidation.MethodValidationExcludeFilter$$Lambda$615/0x00000008013837e0
 spring.ssl-org.springframework.boot.autoconfigure.ssl.SslProperties of Type :: class org.springframework.boot.autoconfigure.ssl.SslProperties
 org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration of Type :: class org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration
 websocketServletWebServerCustomizer of Type :: class org.springframework.boot.autoconfigure.websocket.servlet.TomcatWebSocketServletWebServerCustomizer
@@ -96,7 +96,7 @@ requestContextFilter of Type :: class org.springframework.boot.web.servlet.filte
 org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 formContentFilter of Type :: class org.springframework.boot.web.servlet.filter.OrderedFormContentFilter
 org.springframework.boot.autoconfigure.aop.AopAutoConfiguration$ClassProxyingConfiguration of Type :: class org.springframework.boot.autoconfigure.aop.AopAutoConfiguration$ClassProxyingConfiguration
-forceAutoProxyCreatorToUseClassProxying of Type :: class org.springframework.boot.autoconfigure.aop.AopAutoConfiguration$ClassProxyingConfiguration$$Lambda$373/0x0000000801299908
+forceAutoProxyCreatorToUseClassProxying of Type :: class org.springframework.boot.autoconfigure.aop.AopAutoConfiguration$ClassProxyingConfiguration$$Lambda$373/0x000000080129a0a0
 org.springframework.boot.autoconfigure.aop.AopAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.aop.AopAutoConfiguration
 org.springframework.boot.autoconfigure.availability.ApplicationAvailabilityAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.availability.ApplicationAvailabilityAutoConfiguration
 applicationAvailability of Type :: class org.springframework.boot.availability.ApplicationAvailabilityBean

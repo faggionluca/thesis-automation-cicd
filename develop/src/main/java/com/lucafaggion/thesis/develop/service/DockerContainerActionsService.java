@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,12 +63,9 @@ public class DockerContainerActionsService implements ContainerActionsService {
     DockerClient client = docker.client();
     DockerHttpClient httpClient = docker.http();
 
-    // String serviceConfig = """
-    //     {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"alpine\",\"Command\":[\"sh\",\"-c\",\"sleep 10\",\"&&\", \"echo 'TESTING LOG'\",\"&&\",\"sleep 30\"]},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
-    //         """;
     String serviceConfig = """
-      {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"chentex/random-logger\",\"Args\":[\"100\",\"400\",\"100\"]},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
-            """;
+        {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"chentex/random-logger\",\"Args\":[\"100\",\"400\",\"100\"]},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
+              """;
     ObjectMapper mapper = new ObjectMapper();
     try {
       ServiceSpec spec = mapper.readValue(serviceConfig, ServiceSpec.class);
@@ -74,8 +73,31 @@ public class DockerContainerActionsService implements ContainerActionsService {
       CreateServiceResponse serviceResponse = client.createServiceCmd(spec).exec();
       System.out.println(serviceResponse.toString());
 
-      List<Task> status = client.listTasksCmd().withServiceFilter(serviceResponse.getId()).exec();
-      // TaskStatusContainerStatus containerStatus = null;
+      // List<Task> status = client.listTasksCmd().withServiceFilter(serviceResponse.getId()).exec();
+
+      
+      Callable<List<Task>> taskStatusCallable = new Callable<List<Task>>() {
+        public List<Task> call() throws Exception {
+          return client.listTasksCmd().withServiceFilter(serviceResponse.getId()).exec();
+        }
+      };
+
+      Retryer<List<Task>> taskStatusRetryer = RetryerBuilder.<List<Task>>newBuilder()
+          .retryIfResult(Predicates.<List<Task>>isNull())
+          .retryIfResult(new Predicate<List<Task>>() {
+            @Override
+            public boolean apply(List<Task> input) {
+              return input.isEmpty();
+            }
+          })
+          .retryIfExceptionOfType(IOException.class)
+          .retryIfRuntimeException()
+          .withWaitStrategy(WaitStrategies.fibonacciWait())
+          .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(30, TimeUnit.SECONDS))
+          // .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+          .build();
+
+      List<Task> status = taskStatusRetryer.call(taskStatusCallable);
 
       Callable<TaskStatusContainerStatus> containerStatusCallable = new Callable<TaskStatusContainerStatus>() {
         public TaskStatusContainerStatus call() throws Exception {
@@ -86,16 +108,17 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
           Response response = httpClient.execute(request);
 
+          ObjectMapper noExcpMapper = new ObjectMapper();
+          noExcpMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
           String responseBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-          mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-          Task task = mapper.readValue(responseBody, Task.class);
+          Task task = noExcpMapper.readValue(responseBody, Task.class);
 
           System.out.println(task.getStatus().getContainerStatus());
           return task.getStatus().getContainerStatus();
         }
       };
 
-      Retryer<TaskStatusContainerStatus> retryer = RetryerBuilder.<TaskStatusContainerStatus>newBuilder()
+      Retryer<TaskStatusContainerStatus> containerStatusRetryer = RetryerBuilder.<TaskStatusContainerStatus>newBuilder()
           .retryIfResult(Predicates.<TaskStatusContainerStatus>isNull())
           .retryIfExceptionOfType(IOException.class)
           .retryIfRuntimeException()
@@ -103,17 +126,21 @@ public class DockerContainerActionsService implements ContainerActionsService {
           .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(30, TimeUnit.SECONDS))
           // .withStopStrategy(StopStrategies.stopAfterAttempt(3))
           .build();
-      
-      TaskStatusContainerStatus containerStatus = retryer.call(containerStatusCallable);
+
+      TaskStatusContainerStatus containerStatus = containerStatusRetryer.call(containerStatusCallable);
 
       // TRYING TO GET LOGS
+      // Dovra essere implementato in un servizio a parte che scrivera i log
+      // sia su socket che su database
       ResultCallback.Adapter<Frame> logCallback = new ResultCallback.Adapter<Frame>() {
         @Override
         public void onNext(Frame logfFrame) {
           System.out.println(logfFrame.toString());
         }
       };
-      client.attachContainerCmd(containerStatus.getContainerID()).withFollowStream(true).withStdOut(true)
+      client.attachContainerCmd(containerStatus.getContainerID())
+          .withFollowStream(true)
+          .withStdOut(true)
           .exec(logCallback);
       // List<Container> containers = client.listContainersCmd().exec();
       // Optional<Container> taskContainer = containers.stream().filter((container) ->
@@ -127,6 +154,10 @@ public class DockerContainerActionsService implements ContainerActionsService {
       client.waitContainerCmd(containerStatus.getContainerID()).exec(resultCallback);
       resultCallback.awaitCompletion();
       System.out.println("Service Completed");
+
+      // Finally remove the service
+      client.removeServiceCmd(serviceResponse.getId()).exec();
+
     } catch (IOException | InterruptedException e) {
       // TODO Auto-generated catch block
       System.out.println(ExceptionUtils.getStackTrace(e));
