@@ -1,18 +1,12 @@
 package com.lucafaggion.thesis.develop.service;
 
-import java.io.Closeable;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.google.common.base.Predicate;
@@ -20,37 +14,25 @@ import com.google.common.base.Predicates;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.CreateServiceResponse;
-import com.github.dockerjava.api.command.InspectServiceCmd;
-import com.github.dockerjava.api.command.PingCmd;
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
-import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Image;
-import com.github.dockerjava.api.model.ServiceModeConfig;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.Task;
-import com.github.dockerjava.api.model.TaskState;
 import com.github.dockerjava.api.model.TaskStatusContainerStatus;
-import com.github.dockerjava.core.command.AttachContainerResultCallback;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient.Request;
 import com.github.dockerjava.transport.DockerHttpClient.Response;
-import com.github.rholder.retry.AttemptTimeLimiter;
 import com.github.rholder.retry.AttemptTimeLimiters;
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
-import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
-import com.lucafaggion.thesis.develop.model.RunnerJob;
 
 @Service
 public class DockerContainerActionsService implements ContainerActionsService {

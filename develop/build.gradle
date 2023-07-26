@@ -20,33 +20,43 @@ repositories {
 
 dependencies {
 
+  //  --------------  SPRING  --------------  
   implementation 'org.springframework.boot:spring-boot-starter-web'
-
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
-
-
   // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf
   implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.1.1'
+  // https://mvnrepository.com/artifact/org.projectlombok/lombok
+  compileOnly 'org.projectlombok:lombok:1.18.28'
 
-
+  //  --------------  TESTING  --------------  
   // Use JUnit Jupiter for testing.
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.1.2'
+  // https://mvnrepository.com/artifact/com.h2database/h2
+  testImplementation 'com.h2database:h2:2.2.220'
 
-  // This dependency is used by the application.
-  
+
+  // --------------  DOCKER  ------------------------
   implementation 'com.github.docker-java:docker-java:3.3.1'
   implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.1'
   implementation 'org.apache.httpcomponents.core5:httpcore5-h2:5.2.2'
 
+  // --------------  GRAPHS  ------------------------
   implementation 'org.jgrapht:jgrapht-core:1.5.1'
   // https://mvnrepository.com/artifact/com.github.vlsi.mxgraph/jgraphx
   implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
   implementation 'org.jgrapht:jgrapht-ext:1.5.1'
-
   // https://mvnrepository.com/artifact/com.github.rholder/guava-retrying
   // implementation 'com.google.guava:guava:31.1-jre'
   implementation 'com.github.rholder:guava-retrying:2.0.0'
+
+  // DATABASES
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.1.2'
+  // https://mvnrepository.com/artifact/org.postgresql/postgresql
+  implementation 'org.postgresql:postgresql:42.6.0'
 
 
 }
