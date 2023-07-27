@@ -14,11 +14,11 @@ runnableGraphService of Type :: class com.lucafaggion.thesis.develop.service.Run
 runnerTaskConfigService of Type :: class com.lucafaggion.thesis.develop.service.RunnerTaskConfigService
 secondaryTemplateResolver of Type :: class org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver
 stringTemplateResolver of Type :: class org.thymeleaf.templateresolver.StringTemplateResolver
-run of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$995/0x0000000801759718
-templateEngineTest of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$996/0x0000000801759940
-templateEngineClasses of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$997/0x0000000801759b68
-taskRun of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$998/0x0000000801759d90
-testDocker of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$999/0x0000000801759fb8
+run of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$999/0x000000080175bb88
+templateEngineTest of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$1000/0x000000080175bdb0
+templateEngineClasses of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$1001/0x0000000801759000
+taskRun of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$1002/0x0000000801759228
+testDocker of Type :: class com.lucafaggion.thesis.develop.App$$Lambda$1003/0x0000000801759450
 org.springframework.boot.autoconfigure.AutoConfigurationPackages of Type :: class org.springframework.boot.autoconfigure.AutoConfigurationPackages$BasePackages
 org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration
 propertySourcesPlaceholderConfigurer of Type :: class org.springframework.context.support.PropertySourcesPlaceholderConfigurer
@@ -28,7 +28,7 @@ sslBundleRegistry of Type :: class org.springframework.boot.ssl.DefaultSslBundle
 org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor of Type :: class org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor
 org.springframework.boot.context.internalConfigurationPropertiesBinder of Type :: class org.springframework.boot.context.properties.ConfigurationPropertiesBinder
 org.springframework.boot.context.properties.BoundConfigurationProperties of Type :: class org.springframework.boot.context.properties.BoundConfigurationProperties
-org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter of Type :: class org.springframework.boot.validation.beanvalidation.MethodValidationExcludeFilter$$Lambda$1000/0x000000080175a1e0
+org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter of Type :: class org.springframework.boot.validation.beanvalidation.MethodValidationExcludeFilter$$Lambda$1004/0x0000000801759678
 spring.ssl-org.springframework.boot.autoconfigure.ssl.SslProperties of Type :: class org.springframework.boot.autoconfigure.ssl.SslProperties
 org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration of Type :: class org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration
 websocketServletWebServerCustomizer of Type :: class org.springframework.boot.autoconfigure.websocket.servlet.TomcatWebSocketServletWebServerCustomizer
@@ -174,8 +174,8 @@ sortResolver of Type :: class org.springframework.data.web.SortHandlerMethodArgu
 org.springframework.data.web.config.SpringDataJacksonConfiguration of Type :: class org.springframework.data.web.config.SpringDataJacksonConfiguration
 jacksonGeoModule of Type :: class org.springframework.data.geo.GeoModule
 org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration
-pageableCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1028/0x0000000801785978
-sortCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1026/0x0000000801784c10
+pageableCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1032/0x0000000801781dd8
+sortCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1030/0x0000000801781070
 spring.data.web-org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties
 org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration
 spring.info-org.springframework.boot.autoconfigure.info.ProjectInfoProperties of Type :: class org.springframework.boot.autoconfigure.info.ProjectInfoProperties

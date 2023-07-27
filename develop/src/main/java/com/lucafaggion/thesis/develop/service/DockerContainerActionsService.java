@@ -1,16 +1,22 @@
 package com.lucafaggion.thesis.develop.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.io.CharSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +24,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.async.ResultCallback.Adapter;
 import com.github.dockerjava.api.command.CreateServiceResponse;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import com.github.dockerjava.api.command.InspectExecResponse;
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.ServiceSpec;
@@ -33,6 +42,8 @@ import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.WaitStrategies;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
+import com.lucafaggion.thesis.develop.model.RunnerJob;
+import com.lucafaggion.thesis.develop.model.RunnerJobStep;
 
 @Service
 public class DockerContainerActionsService implements ContainerActionsService {
@@ -40,14 +51,28 @@ public class DockerContainerActionsService implements ContainerActionsService {
   @Autowired
   ContainerService<DockerClient, DockerHttpClient> docker;
 
+  private void execJobTask(String containerId, RunnerJobStep runnerJobStep) {
+    // TODO: implement
+  }
+
+  private void execJob(String containerId, RunnerJob runnerJob) {
+    // TODO: implement
+  }
+
+
   @Override
   public String runActionInContainer(RunnerAction action) {
     DockerClient client = docker.client();
     DockerHttpClient httpClient = docker.http();
 
+    // TODO: Extract logic to service!
+    // String serviceConfig = """
+    // {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"chentex/random-logger\",\"Args\":[\"100\",\"400\",\"100\"]},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
+    // """;
     String serviceConfig = """
-        {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"chentex/random-logger\",\"Args\":[\"100\",\"400\",\"100\"]},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
-              """;
+      {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"alpine\",\"TTY\":true,\"OpenStdin\":true},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
+          """;
+
     ObjectMapper mapper = new ObjectMapper();
     try {
       ServiceSpec spec = mapper.readValue(serviceConfig, ServiceSpec.class);
@@ -55,9 +80,9 @@ public class DockerContainerActionsService implements ContainerActionsService {
       CreateServiceResponse serviceResponse = client.createServiceCmd(spec).exec();
       System.out.println(serviceResponse.toString());
 
-      // List<Task> status = client.listTasksCmd().withServiceFilter(serviceResponse.getId()).exec();
+      // List<Task> status =
+      // client.listTasksCmd().withServiceFilter(serviceResponse.getId()).exec();
 
-      
       Callable<List<Task>> taskStatusCallable = new Callable<List<Task>>() {
         public List<Task> call() throws Exception {
           return client.listTasksCmd().withServiceFilter(serviceResponse.getId()).exec();
@@ -111,6 +136,10 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
       TaskStatusContainerStatus containerStatus = containerStatusRetryer.call(containerStatusCallable);
 
+      // IS the service still running?
+      WaitContainerResultCallback resultCallback = new WaitContainerResultCallback();
+      client.waitContainerCmd(containerStatus.getContainerID()).exec(resultCallback);
+
       // TRYING TO GET LOGS
       // Dovra essere implementato in un servizio a parte che scrivera i log
       // sia su socket che su database
@@ -120,10 +149,35 @@ public class DockerContainerActionsService implements ContainerActionsService {
           System.out.println(logfFrame.toString());
         }
       };
-      client.attachContainerCmd(containerStatus.getContainerID())
-          .withFollowStream(true)
-          .withStdOut(true)
-          .exec(logCallback);
+      // client.attachContainerCmd(containerStatus.getContainerID())
+      // .withFollowStream(true)
+      // .withStdOut(true)
+      // .exec(logCallback);
+
+      // String initialString = "echo 'Hello World'";
+      // InputStream sInputStream = new
+      // ReaderInputStream(CharSource.wrap(initialString).openStream(),
+      // Charsets.UTF_8);
+
+      // Lets try to get a exec to work
+      ExecCreateCmdResponse execCmdId = client.execCreateCmd(containerStatus.getContainerID())
+          .withCmd("asdadadsa", "Hello World")
+          .withAttachStderr(true)
+          .withAttachStdin(true)
+          .withAttachStdout(true)
+          .withPrivileged(true)
+          .withUser("root")
+          .withTty(true)
+          .exec();
+      String sExecCmdId = execCmdId.getId();
+      Adapter<Frame> runExecCmd = client.execStartCmd(sExecCmdId).exec(logCallback);
+      runExecCmd.awaitCompletion();
+      InspectExecResponse result = client.inspectExecCmd(sExecCmdId).exec();
+      System.out.println(result.getExitCodeLong());
+
+      if (result.getExitCodeLong() != 0) {
+        client.removeServiceCmd(serviceResponse.getId()).exec();
+      }
       // List<Container> containers = client.listContainersCmd().exec();
       // Optional<Container> taskContainer = containers.stream().filter((container) ->
       // {
@@ -132,8 +186,7 @@ public class DockerContainerActionsService implements ContainerActionsService {
       // return Arrays.asList(container.getNames()).contains("/task01");
       // }).findFirst();
 
-      WaitContainerResultCallback resultCallback = new WaitContainerResultCallback();
-      client.waitContainerCmd(containerStatus.getContainerID()).exec(resultCallback);
+
       resultCallback.awaitCompletion();
       System.out.println("Service Completed");
 
