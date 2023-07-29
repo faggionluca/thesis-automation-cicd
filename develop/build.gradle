@@ -7,37 +7,66 @@
  */
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
-    id 'application'
+	id 'java'
+	id 'org.springframework.boot' version '3.1.1'
+	id 'io.spring.dependency-management' version '1.1.0'
+  id "io.freefair.lombok" version "8.1.0"
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
+  // Use Maven Central for resolving dependencies.
+  mavenCentral()
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 
-    // This dependency is used by the application.
-    //implementation 'com.google.guava:guava:31.1-jre'
-    implementation 'com.github.docker-java:docker-java:3.3.1'
-    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.1'
+  //  --------------  SPRING  --------------  
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2'
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf
+  implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.1.1'
+  // https://mvnrepository.com/artifact/org.projectlombok/lombok
+  compileOnly 'org.projectlombok:lombok:1.18.28'
 
-    implementation 'org.jgrapht:jgrapht-core:1.5.1'
-    // https://mvnrepository.com/artifact/com.github.vlsi.mxgraph/jgraphx
-    implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
-    implementation 'org.jgrapht:jgrapht-ext:1.5.1'
+  //  --------------  TESTING  --------------  
+  // Use JUnit Jupiter for testing.
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:3.1.2'
+  // https://mvnrepository.com/artifact/com.h2database/h2
+  testImplementation 'com.h2database:h2:2.2.220'
+
+
+  // --------------  DOCKER  ------------------------
+  implementation 'com.github.docker-java:docker-java:3.3.1'
+  implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.1'
+  implementation 'org.apache.httpcomponents.core5:httpcore5-h2:5.2.2'
+
+  // --------------  GRAPHS  ------------------------
+  implementation 'org.jgrapht:jgrapht-core:1.5.1'
+  // https://mvnrepository.com/artifact/com.github.vlsi.mxgraph/jgraphx
+  implementation 'com.github.vlsi.mxgraph:jgraphx:4.2.2'
+  implementation 'org.jgrapht:jgrapht-ext:1.5.1'
+  // https://mvnrepository.com/artifact/com.github.rholder/guava-retrying
+  // implementation 'com.google.guava:guava:31.1-jre'
+  implementation 'com.github.rholder:guava-retrying:2.0.0'
+
+  // DATABASES
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.1.2'
+  // https://mvnrepository.com/artifact/org.postgresql/postgresql
+  implementation 'org.postgresql:postgresql:42.6.0'
+
 
 }
 
-application {
-    // Define the main class for the application.
-    mainClassName = 'com.lucafaggion.thesis.develop.App'
-}
+// application {
+//   // Define the main class for the application.
+//   mainClassName = 'com.lucafaggion.thesis.develop.App'
+// }
 
 tasks.named('test') {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+  // Use JUnit Platform for unit tests.
+  useJUnitPlatform()
 }

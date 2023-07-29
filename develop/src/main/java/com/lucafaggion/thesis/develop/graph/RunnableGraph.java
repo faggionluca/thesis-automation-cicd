@@ -15,7 +15,6 @@ import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
-
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -43,33 +42,19 @@ public class RunnableGraph {
     imgFile.createNewFile();
   }
 
-  public void createGraph() {
-    int low = 5000;
-    int high = 10000;
+  public void fromConfig(File config) throws IOException {
+    
+  }
 
+  public void createGraph() {
+    
     Graph<ListenableFutureTask<String>, RunnableGraphEdge> future_g = new DirectedAcyclicGraph<>(
         RunnableGraphEdge.class);
-    ListenableFutureTask<String> v1 = ListenableFutureTask.create(() -> {
-      TimeUnit.MILLISECONDS.sleep((new Random()).nextInt(high - low) + low);
-      System.out.println("YEEEEEEEEEEE");
-      return "v1";
-    });
-    ListenableFutureTask<String> v2 = ListenableFutureTask.create(() -> {
-      TimeUnit.MILLISECONDS.sleep((new Random()).nextInt(high - low) + low);
-      return "v2";
-    });
-    ListenableFutureTask<String> v3 = ListenableFutureTask.create(() -> {
-      TimeUnit.MILLISECONDS.sleep((new Random()).nextInt(high - low) + low);
-      return "v3";
-    });
-    ListenableFutureTask<String> v4 = ListenableFutureTask.create(() -> {
-      TimeUnit.MILLISECONDS.sleep((new Random()).nextInt(high - low) + low);
-      return "v4";
-    });
-    ListenableFutureTask<String> v5 = ListenableFutureTask.create(() -> {
-      TimeUnit.MILLISECONDS.sleep((new Random()).nextInt(high - low) + low);
-      return "v5";
-    });
+    ListenableFutureTask<String> v1 = (new CallableTask<String>("task-v1", "v1")).getListenableFuture();
+    ListenableFutureTask<String> v2 = (new CallableTask<String>("task-v2", "v2")).getListenableFuture();
+    ListenableFutureTask<String> v3 = (new CallableTask<String>("task-v3", "v3")).getListenableFuture();
+    ListenableFutureTask<String> v4 = (new CallableTask<String>("task-v4", "v4")).getListenableFuture();
+    ListenableFutureTask<String> v5 = (new CallableTask<String>("task-v5", "v5")).getListenableFuture();
 
     Graph<String, DefaultEdge> g = new DirectedAcyclicGraph<>(DefaultEdge.class);
     g.addVertex("v1");

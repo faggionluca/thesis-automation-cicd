@@ -3,12 +3,33 @@
  */
 package com.lucafaggion.thesis.develop;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 // import java.util.*;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
+
+import org.apache.commons.codec.language.bm.Rule.RPattern;
+import org.jgrapht.Graph;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.context.IContext;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
@@ -21,42 +42,124 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import com.lucafaggion.thesis.develop.graph.RunnableGraph;
+import com.lucafaggion.thesis.develop.graph.RunnableGraphEdge;
+import com.lucafaggion.thesis.develop.model.Repo;
+import com.lucafaggion.thesis.develop.model.RunnerAction;
+import com.lucafaggion.thesis.develop.model.RunnerJob;
+import com.lucafaggion.thesis.develop.service.DockerContainerActionsService;
+import com.lucafaggion.thesis.develop.service.RunnableGraphService;
+import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
 
+@SpringBootApplication
+// @ComponentScan("com.lucafaggion.thesis.develop")
 public class App {
-  public String getGreeting() {
-    return "Hello World!";
+
+  public static void main(String[] args) {
+    SpringApplication.run(App.class, args);
   }
 
-  public static void main(String[] args) throws IOException {
-    // System.out.println(new App().getGreeting());
-    // DockerClientConfig config =
-    // DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-    // DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
-    // .dockerHost(config.getDockerHost())
-    // .sslConfig(config.getSSLConfig())
-    // .maxConnections(100)
-    // .connectionTimeout(Duration.ofSeconds(5))
-    // .responseTimeout(Duration.ofSeconds(5))
-    // .build();
-    // DockerClient client = DockerClientImpl.getInstance(config, httpClient);
-    // try {
-    // client.pingCmd().exec();
-    // List<Image> images = client.listImagesCmd().exec();
-    // System.out.println("Docker is responding");
-    // } catch (Exception e) {
-    // System.out.println("Docker Not responding");
-    // }
+  //
+  // https://mkyong.com/spring-boot/how-to-display-all-beans-loaded-by-spring-boot/#:~:text=In%20Spring%20Boot%2C%20you%20can,loaded%20by%20the%20Spring%20container.
+  @Bean
+  public CommandLineRunner run(ApplicationContext appContext) throws IOException {
+    return args -> {
 
-    ExecutorService execService = Executors.newSingleThreadExecutor();
-    // ListeningExecutorService lExecService =
-    // MoreExecutors.listeningDecorator(execService);
+      FileWriter beanFile = new FileWriter("src/main/resources/beans.txt");
+      String[] beans = appContext.getBeanDefinitionNames();
+      for (String bean : beans) {
+        beanFile.write(bean + " of Type :: " + appContext.getBean(bean).getClass() +
+            "\n");
+      }
+      beanFile.close();
+    };
+  }
 
-    RunnableGraph graph = new RunnableGraph(execService);
-    graph.createGraph();
-    graph.print();
-    graph.performTraversal();
-    graph.performRunnableTraversal();
+  @Bean
+  public CommandLineRunner templateEngineTest(SpringTemplateEngine templateEngine) throws IOException {
+    return args -> {
+      HashMap<String, Object> user = new HashMap<String, Object>();
+      user.put("name", "lucafaggion");
 
-    // execService.shutdown();
+      HashMap<String, Object> mapContext = new HashMap<String, Object>();
+      mapContext.put("name", "Testing Name");
+      mapContext.put("user", user);
+
+      Context templateContext = new Context(new Locale("en"), mapContext);
+
+      FileWriter templateWriter = new FileWriter("src/main/resources/configs/testconfig_compiled.yaml");
+      templateEngine.process("testconfig", templateContext, templateWriter);
+
+      FileWriter templateWriterText = new FileWriter("src/main/resources/configs/testconfig_compiled_fromtext.yaml");
+      String template = """
+          name: GitHub Actions Demo
+          on: [push]
+          jobs:
+          Explore-GitHub-Actions:
+          steps:
+          - run: echo \"🎉 The job was automatically triggered by a ${{
+          github.event_name }} event.\"
+          - run: echo \"🐧 This job is now running on a ${{ runner.os }} server hosted
+          by GitHub!\"
+          - run: echo \"🔎 The name of your branch is ${{ github.ref }} and your
+          repository is ${{ github.repository }}.\"
+          - name: Check out repository code
+          uses: actions/checkout@v3
+          - run: echo \"💡 The [(${user.name})] repository has been cloned to the
+          runner.\"
+          - run: echo \"🖥️ The workflow is now ready to test your code on the
+          runner.\"
+          - name: List files in the repository
+          run: |
+          ls ${{ github.workspace }}
+          - run: echo \"🍏 This job's status is ${{ job.status }}.\"
+          """;
+      templateEngine.process(template, templateContext, templateWriterText);
+    };
+  }
+
+  @Bean
+  public CommandLineRunner templateEngineClasses(RunnerTaskConfigService runnerTaskConfigService,
+      RunnableGraphService runnableGraphService) throws IOException {
+    return args -> {
+
+      HashMap<String, Object> user = new HashMap<String, Object>();
+      user.put("name", "lucafaggion");
+
+      HashMap<String, Object> mapContext = new HashMap<String, Object>();
+      mapContext.put("name", "Testing Name");
+      mapContext.put("user", user);
+      Context templateContext = new Context(new Locale("en"), mapContext);
+
+      File templateConfig = new File("src/main/resources/configs/testconfig.yaml");
+      FileWriter templateWriterPlain = new FileWriter("src/main/resources/configs/testconfig_compiled_plain.yaml");
+      String compiledTemplate = runnerTaskConfigService.compileTemplate(templateConfig, templateContext);
+      templateWriterPlain.write(compiledTemplate);
+      templateWriterPlain.close();
+
+      // Create a graph
+      Graph<RunnerAction, RunnableGraphEdge> graph = runnableGraphService
+          .createAcyclicGraphFromConfig(compiledTemplate);
+      runnableGraphService.saveGraphToImage(graph,
+          "src/main/resources/runnerjob_graph.png");
+    };
+  };
+
+  @Bean
+  public CommandLineRunner taskRun(ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+    return args -> {
+      RunnableGraph graph = new RunnableGraph(threadPoolTaskExecutor.getThreadPoolExecutor());
+      graph.createGraph();
+      graph.performRunnableTraversal();
+      // System.out.println(getGreeting());
+    };
+  }
+
+  @Bean
+  public CommandLineRunner testDocker(ApplicationContext appContext,
+      DockerContainerActionsService dockerActionservice)
+      throws IOException {
+    return args -> {
+      dockerActionservice.runActionInContainer(null);
+    };
   }
 }
