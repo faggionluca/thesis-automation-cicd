@@ -3,6 +3,8 @@ package com.lucafaggion.thesis.develop.model;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,6 +24,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
+@JsonInclude(Include.NON_NULL)
 @Table(name = "runner_job_step")
 public class RunnerJobStep {
 
