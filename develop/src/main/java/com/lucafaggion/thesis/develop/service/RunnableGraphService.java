@@ -54,7 +54,7 @@ public class RunnableGraphService {
     // Create the array of callable jobs
     List<RunnerAction> actions = runnerTaskConfig.getJobs().values()
         .stream()
-        .map((job) -> new RunnerAction(job))
+        .map((job) -> RunnerAction.builder().job(job).build())
         .collect(Collectors.toList());
 
     

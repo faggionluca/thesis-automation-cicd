@@ -3,5 +3,4 @@
  */
 package com.lucafaggion.thesis.develop;
 
-class AppTest {
-}
+public class AppTest {}

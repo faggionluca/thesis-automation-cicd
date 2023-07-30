@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop;
+package com.lucafaggion.thesis.develop.model;
 
 import java.util.HashSet;
 import java.util.Set;
