@@ -2,34 +2,24 @@ package com.lucafaggion.thesis.develop.model;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Commit;
-import org.springframework.test.context.TestPropertySource;
 
 import com.lucafaggion.thesis.develop.repository.RunnerJobRepository;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestPropertySource(properties = {
-  "spring.datasource.url= jdbc:postgresql://postdb:5432/testrundb"
-})
-public class RunnerJobIntergrationTest {
+public class RunnerJobIntergrationTest extends MondelIntegrationFixtures {
   
   @Autowired
   RunnerJobRepository runnerJobRepository;
 
   @Test
-  @Commit
+  @Commit // decommentare per debuggare i cambiamenti nel db
   void runnerJobSaveAndIsFoundInSet() {
     // Stiamo testando se la funzione hashCode non muta dopo il salvataggio
 
@@ -39,13 +29,17 @@ public class RunnerJobIntergrationTest {
         .dependsOn(Arrays.asList("depends1", "depends2"))
         .name("just a job")
         .steps(null)
-        .id(BigInteger.ONE)
         .build();
 
     set.add(testRunnerJobSave);
     runnerJobRepository.save(testRunnerJobSave);
 
     assertTrue(set.contains(testRunnerJobSave), "Entity not found in the set");
+  }
+
+  @AfterAll
+  static void debug() {
+    System.out.println("I'm here for Debug");
   }
   
 }
