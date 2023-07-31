@@ -36,10 +36,5 @@ public class RunnerJobIntergrationTest extends MondelIntegrationFixtures {
 
     assertTrue(set.contains(testRunnerJobSave), "Entity not found in the set");
   }
-
-  @AfterAll
-  static void debug() {
-    System.out.println("I'm here for Debug");
-  }
   
 }
