@@ -1,7 +1,9 @@
 package com.lucafaggion.thesis.develop.model;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +24,6 @@ public class RunnerJobIntergrationTest extends MondelIntegrationFixtures {
   @Commit // decommentare per debuggare i cambiamenti nel db
   void runnerJobSaveAndIsFoundInSet() {
     // Stiamo testando se la funzione hashCode non muta dopo il salvataggio
-
     Set<RunnerJob> set = new HashSet<>();
 
     RunnerJob testRunnerJobSave = RunnerJob.builder()
@@ -37,4 +38,17 @@ public class RunnerJobIntergrationTest extends MondelIntegrationFixtures {
     assertTrue(set.contains(testRunnerJobSave), "Entity not found in the set");
   }
   
+
+  @Test
+  @Commit // decommentare per debuggare i cambiamenti nel db
+  void runnerJobSaveFull() throws IOException {
+    // Carichiamo la config e deserializziamo 
+    String config = ModelFixtures.loadConfig("runnerJobOnlySteps");
+    RunnerJob runnerJob = ModelFixtures.mapper.readValue(config, RunnerJob.class);
+    
+    // Salviamo su database
+    runnerJobRepository.save(runnerJob);
+
+    assertNotNull(runnerJob.getId(), "Entity is not saved to the database");
+  }
 }

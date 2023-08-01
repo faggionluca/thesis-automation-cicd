@@ -56,10 +56,16 @@ public class RunnerTaskConfig {
     orphanRemoval = true
   )
   @MapKey(name = "name")
-  // @JoinColumn(name = "runner_task_config_id")
   private Map<String, RunnerJob> jobs;
 
   @JsonIgnore
   @ManyToOne(fetch = FetchType.LAZY)
   private Repo repo;
+
+  @JsonProperty("jobs")
+  public void setJobs(Map<String, RunnerJob> runnerJobs) {
+    runnerJobs.values().stream().forEach(job -> job.setTaskConfig(this));
+    this.jobs = runnerJobs;
+  }
+
 }

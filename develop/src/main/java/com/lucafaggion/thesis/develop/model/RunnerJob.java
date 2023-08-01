@@ -2,6 +2,7 @@ package com.lucafaggion.thesis.develop.model;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,7 +34,7 @@ import lombok.extern.jackson.Jacksonized;
 @Setter
 @Getter
 @Table(name = "runner_job")
-@Jacksonized
+// @Jacksonized
 @JsonInclude(Include.NON_NULL)
 public class RunnerJob {
 
@@ -61,7 +62,14 @@ public class RunnerJob {
   )
   private List<RunnerJobStep> steps;
 
+  @JsonProperty("steps")
+  public void setSteps(List<RunnerJobStep> runnerJobSteps) {
+    runnerJobSteps.stream().forEach(step -> step.setJob(this));
+    this.steps = runnerJobSteps;
+  }
+
   @JsonIgnore
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "runner_task_config_id")
   private RunnerTaskConfig taskConfig;
 }
