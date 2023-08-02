@@ -11,11 +11,15 @@ import lombok.Setter;
 import java.math.BigInteger;
 import java.util.Set;
 
+import org.springframework.security.core.userdetails.UserDetails;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 
@@ -31,8 +35,6 @@ public class Repo {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger id;
   private String location;
-  private String commit;
-  private String branch;
 
   @OneToMany(
     mappedBy = "repo",

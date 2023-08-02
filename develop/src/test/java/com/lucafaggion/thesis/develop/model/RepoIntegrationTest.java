@@ -24,13 +24,16 @@ public class RepoIntegrationTest {
 
     Repo testRepositorySave = Repo.builder()
         .location("http://test.test")
-        .branch("main")
-        .commit("f89a7708")
         .build();
 
     set.add(testRepositorySave);
     repoRepository.save(testRepositorySave);
 
     Assert.isTrue(set.contains(testRepositorySave), "Entity not found in the set");
+  }
+
+  @Test
+  void findByOwner() {
+
   }
 }

@@ -1,10 +1,10 @@
-package com.lucafaggion.resourceserver.TestManager;
+package com.lucafaggion.thesis;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TestManagerApplicationTests {
+class TestRunnerApplicationTests {
 
 	@Test
 	void contextLoads() {
