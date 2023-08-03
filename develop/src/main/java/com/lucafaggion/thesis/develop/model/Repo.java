@@ -42,4 +42,16 @@ public class Repo {
     orphanRemoval = true
   )
   private Set<RunnerTaskConfig> runnertaskConfigs;
+
+  @OneToMany(
+    mappedBy = "repo",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+  )
+  private Set<RepoEvent> events;
+
+  public void addEvent(RepoEvent event) {
+    this.events.add(event);
+    event.setRepo(this);
+  }
 }

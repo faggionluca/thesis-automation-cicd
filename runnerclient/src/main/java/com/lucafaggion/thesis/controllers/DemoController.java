@@ -1,4 +1,4 @@
-package com.lucafaggion.oauthclient.TestRunner.controllers;
+package com.lucafaggion.thesis.controllers;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;

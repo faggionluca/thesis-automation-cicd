@@ -26,6 +26,8 @@ hibernate {
 
 dependencies {
 
+  implementation project(':common')
+
   //  --------------  SPRING  --------------  
   implementation 'org.springframework.boot:spring-boot-starter-web'
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml

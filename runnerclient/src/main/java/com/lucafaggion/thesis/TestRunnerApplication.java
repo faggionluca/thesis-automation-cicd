@@ -1,4 +1,4 @@
-package com.lucafaggion.oauthclient.TestRunner;
+package com.lucafaggion.thesis;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
