@@ -3,7 +3,6 @@ package com.lucafaggion.thesis.develop.model;
 import java.math.BigInteger;
 
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

@@ -3,11 +3,8 @@ package com.lucafaggion.thesis.develop.graph;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import javax.imageio.ImageIO;
 
 import org.jgrapht.Graph;
