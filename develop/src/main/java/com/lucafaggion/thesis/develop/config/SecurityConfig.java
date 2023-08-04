@@ -15,11 +15,11 @@ public class SecurityConfig {
 
   @Value("${server.port}")
   private String port;
-  
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(request -> request
-        .requestMatchers("/webhook/event/**").permitAll()
+        .requestMatchers("/webhook/gh/event/**").permitAll()
         .anyRequest().authenticated())
         // Abilitare il csrf ha senso solo in APP che interagiscono con i browser
         // Questo servelet e un resource server che non interagisce con gli utenti ma solo altri server
