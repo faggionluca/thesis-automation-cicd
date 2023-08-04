@@ -31,9 +31,4 @@ public class RepoIntegrationTest {
 
     Assert.isTrue(set.contains(testRepositorySave), "Entity not found in the set");
   }
-
-  @Test
-  void findByOwner() {
-
-  }
 }

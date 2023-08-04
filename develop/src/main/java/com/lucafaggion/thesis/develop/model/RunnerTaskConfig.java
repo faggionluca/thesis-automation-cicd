@@ -22,6 +22,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,9 +59,9 @@ public class RunnerTaskConfig {
   @MapKey(name = "name")
   private Map<String, RunnerJob> jobs;
 
-  @JsonIgnore
-  @ManyToOne(fetch = FetchType.LAZY)
-  private Repo repo;
+  @OneToOne
+  @JoinColumn(name = "event_id")
+  private RepoEvent event;
 
   @JsonProperty("jobs")
   public void setJobs(Map<String, RunnerJob> runnerJobs) {
