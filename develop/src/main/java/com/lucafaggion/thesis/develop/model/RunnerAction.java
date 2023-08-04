@@ -7,35 +7,34 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.lucafaggion.thesis.develop.service.ContainerActionsService;
-import com.lucafaggion.thesis.develop.service.ContainerService;
-
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@RequiredArgsConstructor
 @ToString
-@Component
+@Builder
 public class RunnerAction implements Callable<String> {
 
-  @Autowired
+  @Setter(AccessLevel.NONE)
+  @NonNull
   ContainerActionsService containerActionsService;
   
-  @NonNull
   @Setter(AccessLevel.NONE)
+  @NonNull
   private RunnerJob job;
 
   @Setter(AccessLevel.NONE)
+  @NonNull
   @ToString.Exclude
   private ListenableFutureTask<String> listenableFuture;
 
   @Override
   public String call() throws Exception {
-    // TODO Auto-generated method stub
     return containerActionsService.runActionInContainer(this);
   }
   

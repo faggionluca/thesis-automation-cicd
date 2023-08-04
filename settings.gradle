@@ -8,6 +8,7 @@
  */
 
 rootProject.name = 'thesis-automation-cicd'
+include('common')
 include('develop')
 include('authserver')
 include('resourceserver')
