@@ -3,6 +3,7 @@ package com.lucafaggion.thesis.develop.model;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import org.springframework.test.annotation.Commit;
 
 import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
 import com.lucafaggion.thesis.develop.repository.RepoRepository;
+import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -22,6 +24,8 @@ public class RepoPushEventIntegrationTest extends MondelIntegrationFixtures {
   RepoEventRepository repoEventRepository;
   @Autowired
   RepoRepository repoInitRepository;
+  @Autowired
+  RunnerTaskConfigRepository runnerTaskConfigRepository;
   
   private RepoPushEvent repoPushEvent;
   private Repo repo;
@@ -39,11 +43,11 @@ public class RepoPushEventIntegrationTest extends MondelIntegrationFixtures {
         .deleted(false)
         .forced(false)
         .build();
-    this.repo = Repo.builder()
+    Repo tmp = Repo.builder()
         .location("http:someurl.com/repo.git")
         .events(new HashSet<RepoEvent>())
         .build();
-    repoInitRepository.save(repo);
+    this.repo = repoInitRepository.save(tmp);
   }
 
   @Test
@@ -57,15 +61,26 @@ public class RepoPushEventIntegrationTest extends MondelIntegrationFixtures {
   @Commit
   void saveRepoPushEventWithRepo() {
     // salviamo nel database dopo aver aggiunto l'evento ad un repository
-    Repo dbRepo = this.repoInitRepository.getReferenceById((long) 1);
-    dbRepo.addEvent(repoPushEvent);
+    this.repo.addEvent(repoPushEvent);
     repoPushEvent = repoEventRepository.save(repoPushEvent);
 
-    //
-    Repo dbRepo1 = this.repoInitRepository.getReferenceById((long) 1);
-    Set<RepoEvent> events = dbRepo1.getEvents();
-
     assertNotNull(repoPushEvent.getId(), "The repoPushEvent should be saved");
-    assertTrue(events.size() > 0, "The events list should not be empty");
+    assertTrue(this.repo.getEvents().size() > 0, "The events list should not be empty");
   }
+
+  @Test
+  @Commit
+  void saveWithRunnerTaskConfig() {
+    RunnerTaskConfig runnerTaskConfig = RunnerTaskConfig.builder()
+        .name("testTask")
+        .onEvent(Arrays.asList("push", "commit"))
+        .build();
+    
+    this.repoPushEvent.addConfig(runnerTaskConfig);
+    RepoPushEvent repoPushEventFromDb = repoEventRepository.save(repoPushEvent);
+
+    assertNotNull(runnerTaskConfig.getId(), "runnerTaskConfig should be saved");
+    assertNotNull(repoPushEventFromDb.getConfig(), "repoPushEventFromDb should have a reference to runnerTaskConfig");
+  }
+  
 }

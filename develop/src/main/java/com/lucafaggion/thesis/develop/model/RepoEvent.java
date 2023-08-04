@@ -41,5 +41,5 @@ public class RepoEvent {
     joinColumns = @JoinColumn(name = "event", referencedColumnName = "id"),
     inverseJoinColumns = @JoinColumn(name = "repo", referencedColumnName = "id")
   )
-  private Repo repo;
+  private Repo repository;
 }

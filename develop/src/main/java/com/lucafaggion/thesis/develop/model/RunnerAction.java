@@ -10,6 +10,7 @@ import com.lucafaggion.thesis.develop.service.ContainerActionsService;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,10 +18,10 @@ import lombok.ToString;
 @Getter
 @ToString
 @Builder
-@Component
 public class RunnerAction implements Callable<String> {
 
-  @Autowired
+  @Setter(AccessLevel.NONE)
+  @NonNull
   ContainerActionsService containerActionsService;
   
   @Setter(AccessLevel.NONE)

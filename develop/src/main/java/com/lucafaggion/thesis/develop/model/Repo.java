@@ -11,6 +11,8 @@ import lombok.Setter;
 import java.math.BigInteger;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,10 +32,19 @@ public class Repo {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger id;
+
+  private String node_id;
+  private String name;
+  private String full_name;
+
+  private String url;
+
+  @JsonAlias("private")
+  private Boolean isPrivate;
   private String location;
 
   @OneToMany(
-    mappedBy = "repo",
+    mappedBy = "repository",
     cascade = CascadeType.ALL,
     orphanRemoval = true
   )
@@ -41,6 +52,6 @@ public class Repo {
 
   public void addEvent(RepoEvent event) {
     this.events.add(event);
-    event.setRepo(this);
+    event.setRepository(this);
   }
 }

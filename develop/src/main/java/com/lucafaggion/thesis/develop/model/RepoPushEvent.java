@@ -40,4 +40,9 @@ public class RepoPushEvent extends RepoEvent {
   @PrimaryKeyJoinColumn
   @JsonIgnore
   private RunnerTaskConfig config;
+
+  void addConfig(RunnerTaskConfig config) {
+    this.config = config;
+    config.setEvent(this);
+  }
 }
