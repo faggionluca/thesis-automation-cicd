@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "user_associated_accounts", uniqueConstraints = @UniqueConstraint(columnNames = { "username",
-    "service" }))
+    "service_id" }))
 public class UserAssociatedAccount {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +29,10 @@ public class UserAssociatedAccount {
   private String username;
   private String email;
   private String token;
-  private String service;
+
+  @OneToOne
+  @JoinColumn(name="service_id")
+  private ExternalService service;
 
   @ManyToOne
   @JoinColumn(name = "user_id")

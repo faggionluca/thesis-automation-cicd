@@ -1,11 +1,14 @@
 package com.lucafaggion.thesis.develop.repository;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
+import com.lucafaggion.thesis.common.repository.ExternalServiceRepository;
 import com.lucafaggion.thesis.common.repository.UserAssociatedAccountRepository;
 import com.lucafaggion.thesis.common.repository.UserRepository;
 import com.lucafaggion.thesis.develop.model.Repo;
@@ -23,6 +26,9 @@ public class GitHubWebhookService {
   @Autowired
   RepoRepository repoRepository;
 
+  @Autowired
+  ExternalServiceRepository externalServiceRepository;
+
   /**
    * Converte un body di typo GitHubPushEvent in un oggetto RepoPushEvent gestibile da noi
    * @param gitHubPushEvent il body della richiesta da convertire
@@ -30,8 +36,11 @@ public class GitHubWebhookService {
    */
   public RepoPushEvent toRepoPushEvent(GitHubPushEvent gitHubPushEvent) {
 
+    ExternalService service = externalServiceRepository.findByName(serviceName).orElseThrow();
+
+    // TODO: recuperare il corretto service con una query
     UserAssociatedAccount pusher = userAssociatedAccountRepository
-        .findByUsernameAndService(gitHubPushEvent.getPusher().getName(), GitHubWebhookService.serviceName)
+        .findByUsernameAndServiceId(gitHubPushEvent.getPusher().getName(), service.getId())
         .orElse(null);
 
     Repo repo = repoRepository.findByUrl(gitHubPushEvent.getRepository().getClone_url()).orElseThrow();
@@ -45,7 +54,6 @@ public class GitHubWebhookService {
         .deleted(gitHubPushEvent.isDeleted())
         .forced(gitHubPushEvent.isForced())
         .pusher(pusher.getUser())
-        .type(GitHubWebhookService.serviceName)
         .build();
 
     return repoPushEvent;

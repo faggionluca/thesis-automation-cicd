@@ -22,7 +22,7 @@ public class RepoIntegrationTest {
     Set<Repo> set = new HashSet<>();
 
     Repo testRepositorySave = Repo.builder()
-        .location("http://test.test")
+        .url("http://test.test")
         .build();
 
     set.add(testRepositorySave);

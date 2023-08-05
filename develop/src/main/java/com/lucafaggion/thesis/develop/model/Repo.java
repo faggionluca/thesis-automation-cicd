@@ -41,7 +41,6 @@ public class Repo {
 
   @JsonAlias("private")
   private Boolean isPrivate;
-  private String location;
 
   @OneToMany(
     mappedBy = "repository",

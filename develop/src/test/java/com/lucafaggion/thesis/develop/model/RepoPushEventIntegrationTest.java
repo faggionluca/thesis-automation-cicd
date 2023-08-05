@@ -35,7 +35,6 @@ public class RepoPushEventIntegrationTest extends MondelIntegrationFixtures {
   @Commit
   void setUp() {
     this.repoPushEvent = RepoPushEvent.builder()
-        .type("push")
         .after("b36a7a92007de9702b694cba22f62ba1677f1f8a")
         .before("0000000000000000000000000000000000000000")
         .ref("refs/heads/test")
@@ -44,7 +43,6 @@ public class RepoPushEventIntegrationTest extends MondelIntegrationFixtures {
         .forced(false)
         .build();
     Repo tmp = Repo.builder()
-        .location("http:someurl.com/repo.git")
         .events(new HashSet<RepoEvent>())
         .build();
     this.repo = repoInitRepository.save(tmp);

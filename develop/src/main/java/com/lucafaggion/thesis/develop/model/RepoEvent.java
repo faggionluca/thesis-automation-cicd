@@ -33,9 +33,6 @@ public class RepoEvent {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger id;
 
-  @Nonnull
-  private String type;
-
   @ManyToOne
   @JoinTable(name = "repo_event",
     joinColumns = @JoinColumn(name = "event", referencedColumnName = "id"),
