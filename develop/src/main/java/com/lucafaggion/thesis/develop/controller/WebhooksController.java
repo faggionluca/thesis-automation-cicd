@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.GitHub.GitHubPushEvent;
-import com.lucafaggion.thesis.develop.repository.GitHubWebhookService;
 import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
+import com.lucafaggion.thesis.develop.service.GitHubWebhookService;
 
 @RestController
 public class WebhooksController {

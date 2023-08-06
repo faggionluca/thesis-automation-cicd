@@ -5,8 +5,14 @@ package com.lucafaggion.thesis;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
+@EntityScan(basePackages = "com.lucafaggion.thesis.develop")
+@EnableJpaRepositories(basePackages = "com.lucafaggion.thesis.develop")
+@ComponentScan(basePackages = { "com.lucafaggion.thesis.develop", "com.lucafaggion.thesis.common.config"})
 // @ComponentScan("com.lucafaggion.thesis.develop")
 public class App {
 

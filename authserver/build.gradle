@@ -17,17 +17,20 @@ plugins {
 
 dependencies {
   implementation project(':common')
-  //SECURITY
+  // --------------  SPRING SECURITY ------------------------
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'  //OAUTH2 Authorization Server
 	implementation 'org.springframework.boot:spring-boot-starter-security'  // Spring Boot Security
 
-  // DATABASEs
+  // --------------  DATABASE  ------------------------
   implementation 'org.postgresql:postgresql:42.6.0' //Postgres JDBC driver
   // implementation 'org.springframework.boot:spring-boot-starter-data-jdbc:3.1.1' // Jdbc
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.1.1' // JPA
 
+  // --------------  AMQP  ------------------------
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-amqp
+  implementation 'org.springframework.boot:spring-boot-starter-amqp:3.1.2'
 
-  //TESTING
+    // --------------  TESTING  ------------------------
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 }

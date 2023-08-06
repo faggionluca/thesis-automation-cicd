@@ -22,6 +22,13 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=postgresmaster
     volumes:
       - pgAdminThesis:/var/lib/pgadmin
+  rabbitmq:
+    image: rabbitmq:3-management
+    networks:
+      - thesis-network
+    ports:
+      - "15672:15672"
+      - "5672:5672" #Non necessaria siccome sono sulla stessa net
 
 networks:
   thesis-network:
