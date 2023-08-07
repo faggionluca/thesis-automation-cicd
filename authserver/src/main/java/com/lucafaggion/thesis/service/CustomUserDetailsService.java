@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.common.service;
+package com.lucafaggion.thesis.service;
 
 import java.util.Optional;
 
@@ -7,9 +7,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.lucafaggion.thesis.common.model.CustomUserDetails;
-import com.lucafaggion.thesis.common.model.User;
-import com.lucafaggion.thesis.common.repository.UserRepository;
+// import com.lucafaggion.thesis.common.model.CustomUserDetails;
+import com.lucafaggion.thesis.model.User;
+import com.lucafaggion.thesis.repository.UserRepository;
+import com.lucafaggion.thesis.model.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,8 +22,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Optional<User> user = userRepository.findByUsername(username);
-	    return user.map(CustomUserDetails::new).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+		User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	  return new CustomUserDetails(user);
 	}
 
 }

@@ -39,6 +39,8 @@ public class Repo {
 
   private String url;
 
+  private BigInteger owner;
+
   @JsonAlias("private")
   private Boolean isPrivate;
 

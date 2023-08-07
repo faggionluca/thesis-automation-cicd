@@ -1,5 +1,7 @@
 package com.lucafaggion.thesis.controller;
 
+import java.math.BigInteger;
+
 import org.hibernate.Hibernate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;

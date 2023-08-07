@@ -10,6 +10,8 @@ dependencies {
   //  --------------  SPRING  --------------  
   // https://mvnrepository.com/artifact/org.projectlombok/lombok
   compileOnly 'org.projectlombok:lombok:1.18.28'
+  // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
   //  --------------  SPRING SECURITY  --------------  
   // https://mvnrepository.com/artifact/org.springframework.security/spring-security-core
