@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.common.repository;
+package com.lucafaggion.thesis.repository;
 
 import java.math.BigInteger;
 import java.util.Optional;

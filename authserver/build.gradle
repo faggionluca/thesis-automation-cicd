@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.1.1'
+	id 'org.springframework.boot' version '3.1.2'
 	id 'io.spring.dependency-management' version '1.1.0'
 }
 
@@ -23,10 +23,10 @@ configurations {
 
 
 dependencies {
-  // implementation project(':common')
+  implementation project(':common')
   // --------------  SPRING SECURITY ------------------------
 	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-authorization-server
-  implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server:3.1.2' //OAUTH2 Authorization Server
+  implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server' //OAUTH2 Authorization Server
 	implementation 'org.springframework.boot:spring-boot-starter-security'  // Spring Boot Security
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
   compileOnly 'org.projectlombok:lombok:1.18.28'
@@ -40,6 +40,10 @@ dependencies {
     // --------------  TESTING  ------------------------
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+  // --------------  AMQP  ------------------------
+  // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-amqp
+  implementation 'org.springframework.boot:spring-boot-starter-amqp'
 }
 
 tasks.named('test') {

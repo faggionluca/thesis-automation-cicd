@@ -1,14 +1,12 @@
 package com.lucafaggion.thesis.service;
 
-import java.util.Optional;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 // import com.lucafaggion.thesis.common.model.CustomUserDetails;
-import com.lucafaggion.thesis.model.User;
+import com.lucafaggion.thesis.common.model.User;
 import com.lucafaggion.thesis.repository.UserRepository;
 import com.lucafaggion.thesis.model.CustomUserDetails;
 

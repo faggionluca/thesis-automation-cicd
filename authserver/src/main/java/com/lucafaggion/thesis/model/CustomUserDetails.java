@@ -8,7 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.lucafaggion.thesis.model.User;
+import com.lucafaggion.thesis.common.model.User;
 
 import lombok.Builder;
 import lombok.NoArgsConstructor;
