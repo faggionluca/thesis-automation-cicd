@@ -18,7 +18,7 @@ import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
 
 import jakarta.transaction.Transactional;
 
-public class RepoPushEventIntegrationTest extends MondelIntegrationFixtures {
+public class RepoPushEventIntegrationTest extends ModelIntegrationFixtures {
 
   @Autowired
   RepoEventRepository repoEventRepository;

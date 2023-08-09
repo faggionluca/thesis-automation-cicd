@@ -11,7 +11,7 @@ import org.springframework.util.Assert;
 import com.lucafaggion.thesis.develop.repository.RepoRepository;
 
 @DataJpaTest
-public class RepoIntegrationTest {
+public class RepoIntegrationTest extends ModelIntegrationFixtures {
   @Autowired
   RepoRepository repoRepository;
 

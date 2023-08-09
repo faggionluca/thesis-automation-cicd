@@ -8,16 +8,27 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 
 import com.lucafaggion.thesis.develop.repository.RunnerJobRepository;
 
-public class RunnerJobIntergrationTest extends MondelIntegrationFixtures {
+public class RunnerJobIntergrationTest extends ModelIntegrationFixtures {
   
   @Autowired
   RunnerJobRepository runnerJobRepository;
+
+  String config;
+  RunnerJob runnerJob;
+
+  @BeforeEach
+  void setUp() throws IOException {
+    this.config = ModelFixtures.loadConfig("runnerJobOnlySteps");
+    RunnerJob runnerJobTmp = ModelFixtures.mapper.readValue(config, RunnerJob.class);
+    this.runnerJob = runnerJobRepository.save(runnerJobTmp);
+  }
 
   @Test
   @Commit // decommentare per debuggare i cambiamenti nel db
@@ -42,12 +53,7 @@ public class RunnerJobIntergrationTest extends MondelIntegrationFixtures {
   @Commit // decommentare per debuggare i cambiamenti nel db
   void runnerJobSaveFull() throws IOException {
     // Carichiamo la config e deserializziamo 
-    String config = ModelFixtures.loadConfig("runnerJobOnlySteps");
-    RunnerJob runnerJob = ModelFixtures.mapper.readValue(config, RunnerJob.class);
-    
     // Salviamo su database
-    runnerJobRepository.save(runnerJob);
-
     assertNotNull(runnerJob.getId(), "Entity is not saved to the database");
   }
 }

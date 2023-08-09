@@ -14,7 +14,7 @@ import org.springframework.test.annotation.Commit;
 
 import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
 
-public class RunnerTaskConfigIntegrationTest extends MondelIntegrationFixtures {
+public class RunnerTaskConfigIntegrationTest extends ModelIntegrationFixtures {
 
   @Autowired
   RunnerTaskConfigRepository runnerTaskConfigRepository;

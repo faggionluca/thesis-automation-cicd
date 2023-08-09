@@ -1,11 +1,14 @@
 package com.lucafaggion.thesis.develop.model;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +16,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,4 +48,18 @@ public class RunnerJobStep {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "runner_job_id")
   private RunnerJob job;
+
+  @JsonIgnore
+  @OneToMany(
+    mappedBy = "step",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+  )
+  @Builder.Default
+  private List<RunnerStepLog> logs = new ArrayList<RunnerStepLog>();
+
+  void addLog(RunnerStepLog log) {
+    this.logs.add(log);
+    log.setStep(this);
+  }
 }
