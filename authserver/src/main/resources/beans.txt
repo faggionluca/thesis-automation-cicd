@@ -43,9 +43,9 @@ jwtDecoder of Type :: class org.springframework.security.oauth2.jwt.NimbusJwtDec
 authorizationServerSettings of Type :: class org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings
 userExchange of Type :: class org.springframework.amqp.core.DirectExchange
 jackson2MessageConverter of Type :: class org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
-commonInit of Type :: class com.lucafaggion.thesis.common.config.CommonSpringConfig$$Lambda$1456/0x0000000801941b48
+commonInit of Type :: class com.lucafaggion.thesis.common.config.CommonSpringConfig$$Lambda$1456/0x0000000801941fb8
 org.springframework.boot.autoconfigure.AutoConfigurationPackages of Type :: class org.springframework.boot.autoconfigure.AutoConfigurationPackages$BasePackages
-run of Type :: class com.lucafaggion.thesis.AuthServerApplication$$Lambda$1457/0x0000000801941d68
+run of Type :: class com.lucafaggion.thesis.AuthServerApplication$$Lambda$1457/0x00000008019421d8
 org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration
 propertySourcesPlaceholderConfigurer of Type :: class org.springframework.context.support.PropertySourcesPlaceholderConfigurer
 org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration
@@ -54,7 +54,7 @@ sslBundleRegistry of Type :: class org.springframework.boot.ssl.DefaultSslBundle
 org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor of Type :: class org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor
 org.springframework.boot.context.internalConfigurationPropertiesBinder of Type :: class org.springframework.boot.context.properties.ConfigurationPropertiesBinder
 org.springframework.boot.context.properties.BoundConfigurationProperties of Type :: class org.springframework.boot.context.properties.BoundConfigurationProperties
-org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter of Type :: class org.springframework.boot.validation.beanvalidation.MethodValidationExcludeFilter$$Lambda$1458/0x0000000801941f90
+org.springframework.boot.context.properties.EnableConfigurationPropertiesRegistrar.methodValidationExcludeFilter of Type :: class org.springframework.boot.validation.beanvalidation.MethodValidationExcludeFilter$$Lambda$1458/0x0000000801942400
 spring.ssl-org.springframework.boot.autoconfigure.ssl.SslProperties of Type :: class org.springframework.boot.autoconfigure.ssl.SslProperties
 org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration of Type :: class org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration$TomcatWebSocketConfiguration
 websocketServletWebServerCustomizer of Type :: class org.springframework.boot.autoconfigure.websocket.servlet.TomcatWebSocketServletWebServerCustomizer
@@ -226,8 +226,8 @@ sortResolver of Type :: class org.springframework.data.web.SortHandlerMethodArgu
 org.springframework.data.web.config.SpringDataJacksonConfiguration of Type :: class org.springframework.data.web.config.SpringDataJacksonConfiguration
 jacksonGeoModule of Type :: class org.springframework.data.geo.GeoModule
 org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration
-pageableCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1465/0x0000000801946db8
-sortCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1463/0x0000000801946050
+pageableCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1465/0x0000000801947228
+sortCustomizer of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration$$Lambda$1463/0x00000008019464c0
 spring.data.web-org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties of Type :: class org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties
 org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration of Type :: class org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration
 spring.info-org.springframework.boot.autoconfigure.info.ProjectInfoProperties of Type :: class org.springframework.boot.autoconfigure.info.ProjectInfoProperties
