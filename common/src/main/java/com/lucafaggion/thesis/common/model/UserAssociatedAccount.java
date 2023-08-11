@@ -13,15 +13,19 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "user_associated_accounts", uniqueConstraints = @UniqueConstraint(columnNames = { "username",
+@Table(name = "associated_account", uniqueConstraints = @UniqueConstraint(columnNames = { "username",
     "service_id" }))
+@EqualsAndHashCode(exclude = { "user"}) // This,
+@ToString(exclude = { "user"}) // and this
 public class UserAssociatedAccount {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,8 +38,4 @@ public class UserAssociatedAccount {
   @OneToOne
   @JoinColumn(name="service_id")
   private ExternalService service;
-
-  @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "user_id")
-  private User user;
 }

@@ -19,9 +19,11 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -29,43 +31,41 @@ import lombok.Singular;
 @Builder
 @Entity
 @Table(name = "users")
+@EqualsAndHashCode(exclude = { "userAssociatedAccounts" }) // This,
+@ToString(exclude = { "userAssociatedAccounts" }) // and this
 public class User {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-	@NonNull
-	@Column(unique = true)
-	private String username;
-	@NonNull
-	private String password;
+  @NonNull
+  @Column(unique = true)
+  private String username;
+  @NonNull
+  private String password;
 
-	@Singular
-	@ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-	@JoinTable(name = "users_authorities", joinColumns = {
-			@JoinColumn(name = "users_id", referencedColumnName = "id") }, inverseJoinColumns = {
-					@JoinColumn(name = "authorities_id", referencedColumnName = "id") })
-	private Set<Authority> authorities;
+  @Singular
+  @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+  @JoinTable(name = "users_authorities", joinColumns = {
+      @JoinColumn(name = "users_id", referencedColumnName = "id") }, inverseJoinColumns = {
+          @JoinColumn(name = "authorities_id", referencedColumnName = "id") })
+  private Set<Authority> authorities;
 
-	@Builder.Default
-	private Boolean accountNonExpired = true;
-	@Builder.Default
-	private Boolean accountNonLocked = true;
-	@Builder.Default
-	private Boolean credentialsNonExpired = true;
-	@Builder.Default
-	private Boolean enabled = true;
+  @Builder.Default
+  private Boolean accountNonExpired = true;
+  @Builder.Default
+  private Boolean accountNonLocked = true;
+  @Builder.Default
+  private Boolean credentialsNonExpired = true;
+  @Builder.Default
+  private Boolean enabled = true;
 
-	private String firstName;
-	private String lastName;
-	private String emailAddress;
-	private LocalDate birthdate;
+  private String firstName;
+  private String lastName;
+  private String emailAddress;
+  private LocalDate birthdate;
 
-  @OneToMany(
-    mappedBy = "user",
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<UserAssociatedAccount> userAssociatedAccounts;
 }

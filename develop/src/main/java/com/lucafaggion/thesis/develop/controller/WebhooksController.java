@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
 import com.lucafaggion.thesis.develop.service.WebhookService;
+import com.lucafaggion.thesis.develop.service.GitHub.GitHubAPIService;
 
 @RestController
 public class WebhooksController {
@@ -28,6 +29,9 @@ public class WebhooksController {
   @Autowired
   WebhookService webhookService;
 
+  @Autowired
+  GitHubAPIService gitHubAPIService;
+
   // @PostMapping("/webhook/gh/event/push")
   // ResponseEntity<HttpStatus> ReceivePushEvent(@RequestBody GitHubPushEvent gitHubPushEvent) {
   //   RepoPushEvent repoPushEvent = gitHubWebhookService.toRepoPushEvent(gitHubPushEvent);
@@ -39,9 +43,10 @@ public class WebhooksController {
   ResponseEntity<HttpStatus> ReceiveGeneralPushEvent(@RequestHeader HttpHeaders headers, @RequestBody String body)
       throws JsonMappingException, JsonProcessingException {
     logger.debug("Received /webhook/event/push with HEADERS: {}, BODY: {}", headers, body);
-    RepoPushEvent repoPushEvent = webhookService.deserializeToPushEvent(headers, body);
-    repoEventRepository.save(repoPushEvent);
+    RepoPushEvent repoPushEvent = repoEventRepository.save(webhookService.deserializeToPushEvent(headers, body));
     logger.debug("Successfully deserialized /webhook/event/push RESULT: {}", repoPushEvent);
+    gitHubAPIService.retriveConfig(repoPushEvent);
     return ResponseEntity.ok(HttpStatus.OK);
   }
+
 }

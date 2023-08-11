@@ -33,7 +33,6 @@ public class Repo {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private BigInteger id;
 
-  private String node_id;
   private String name;
   private String full_name;
 

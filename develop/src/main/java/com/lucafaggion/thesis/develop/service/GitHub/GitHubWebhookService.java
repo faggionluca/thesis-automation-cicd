@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.service;
+package com.lucafaggion.thesis.develop.service.GitHub;
 
 import java.math.BigInteger;
 import java.util.Optional;
@@ -21,6 +21,7 @@ import com.lucafaggion.thesis.develop.model.Repo;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.GitHub.GitHubPushEvent;
 import com.lucafaggion.thesis.develop.repository.RepoRepository;
+import com.lucafaggion.thesis.develop.service.RepoEventWebhookService;
 
 @Service
 public class GitHubWebhookService implements RepoEventWebhookService<RepoPushEvent> {
