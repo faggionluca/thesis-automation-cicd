@@ -7,6 +7,7 @@ import com.lucafaggion.thesis.common.model.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -23,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-@Setter(value = AccessLevel.PACKAGE)
+@Setter
 @Getter
 public class RepoPushEvent extends RepoEvent {
   private String ref;
@@ -48,4 +49,7 @@ public class RepoPushEvent extends RepoEvent {
     this.config = config;
     config.setEvent(this);
   }
+
+  @Embedded
+  private CurrentStatus status;
 }

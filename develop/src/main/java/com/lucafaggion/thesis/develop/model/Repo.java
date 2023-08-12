@@ -25,7 +25,7 @@ import jakarta.persistence.OneToMany;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-@Setter(value = AccessLevel.PACKAGE)
+@Setter
 @Getter
 @Table(name = "repository")
 public class Repo {
