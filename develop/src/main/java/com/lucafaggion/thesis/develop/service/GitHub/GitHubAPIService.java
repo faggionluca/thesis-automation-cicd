@@ -57,8 +57,11 @@ public class GitHubAPIService {
     // Aggiungiamo gli Headers se il repo e' privato aggiungiamo AUTHORIZE_USER_HEADER per l'APIInterceptor
     // APIInterceptor aggiungera automaticamente il corretto Bearer token
     HttpHeaders headers = new HttpHeaders();
-    if (/*repoPushEvent.getRepository().getIsPrivate()*/true) {
-      BigInteger user = repoPushEvent.getRepository().getOwner();
+    if (repoPushEvent.getRepository().getIsPrivate()) {
+      BigInteger user = repoPushEvent.getPusher();
+      if (user == null) {
+        user = repoPushEvent.getRepository().getOwner();
+      }
       headers.put(APIInterceptor.AUTHORIZE_USER_HEADER, Arrays.asList(String.valueOf(user), serviceName));
     }
 

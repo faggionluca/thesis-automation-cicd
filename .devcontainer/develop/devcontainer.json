@@ -14,7 +14,8 @@
   },
   "runArgs": [
     "--network=thesis-network",
-    "--name=developjava"
+    "--name=developjava",
+    "--env-file", ".devcontainer/develop/.env"
   ],
   "customizations": {
     // Configure properties specific to VS Code.
@@ -27,7 +28,7 @@
 	]
     }
   },
-  "postCreateCommand": "bash .devcontainer/develop/install-dev-tools.sh",
+  "postCreateCommand": "bash .devcontainer/develop/install-dev-tools.sh && git config --global core.autocrlf input",
   "mounts": [
     "type=volume,target=${containerWorkspaceFolder}/.gradle,consistency=cached"
   ],

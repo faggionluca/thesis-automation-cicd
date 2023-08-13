@@ -97,8 +97,8 @@ public class AuthServerConfig {
   public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
     return http
         .securityMatcher("/api/**")
-        .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-            .anyRequest().authenticated())
+        .authorizeHttpRequests(
+            authorizeRequests -> authorizeRequests.anyRequest().authenticated())
         .csrf((csrf) -> csrf.disable())
         // .exceptionHandling(exceptionHandling -> exceptionHandling
         // .authenticationEntryPoint(new ()))
