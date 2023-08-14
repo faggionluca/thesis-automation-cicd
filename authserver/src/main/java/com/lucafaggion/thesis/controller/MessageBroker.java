@@ -13,10 +13,10 @@ import com.lucafaggion.thesis.common.message.SearchUserMessage;
 import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
+import com.lucafaggion.thesis.config.AMQPServerConfig;
 import com.lucafaggion.thesis.repository.ExternalServiceRepository;
 import com.lucafaggion.thesis.repository.UserAssociatedAccountRepository;
 import com.lucafaggion.thesis.repository.UserRepository;
-import com.lucafaggion.thesis.config.AMQPServerConfig;
 
 @Component
 @Transactional

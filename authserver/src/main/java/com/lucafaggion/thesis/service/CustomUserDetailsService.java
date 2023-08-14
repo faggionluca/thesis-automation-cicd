@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 // import com.lucafaggion.thesis.common.model.CustomUserDetails;
 import com.lucafaggion.thesis.common.model.User;
-import com.lucafaggion.thesis.repository.UserRepository;
 import com.lucafaggion.thesis.model.CustomUserDetails;
+import com.lucafaggion.thesis.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 

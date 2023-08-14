@@ -21,11 +21,11 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 @Setter(value = AccessLevel.PACKAGE)
 @Getter
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @SuperBuilder
 @Table(name = "event")
 public class RepoEvent {
