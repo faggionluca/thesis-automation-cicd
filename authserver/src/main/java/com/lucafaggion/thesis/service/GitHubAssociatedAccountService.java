@@ -1,6 +1,7 @@
 package com.lucafaggion.thesis.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
@@ -44,6 +45,7 @@ public class GitHubAssociatedAccountService
         githubServiceName);
   }
 
+  @Override
   public ModelAndView redirectToAuthorize() {
     String uri = String.format(githubUri + "?client_id=%s&scope=%s&state=randomstring", githubClientId, githubScopes);
     return new ModelAndView("redirect:" + uri);
@@ -67,6 +69,17 @@ public class GitHubAssociatedAccountService
         .build();
     super.refreshTokenForUser((GitHubAccount)userAssociatedAccount, gitHubRefreshTokenExchange);
     return userAssociatedAccount;
+  }
+
+  @Override
+  protected HttpHeaders buildTokenRequestHeaders(HttpHeaders headers, OAuthTokenRequest tokenRequestMessage) {
+    return headers;
+  }
+
+  @Override
+  protected HttpHeaders buildRefreshTokenRequestHeaders(HttpHeaders headers,
+      OAuthRefreshTokenRequest tokenRequestMessage) {
+    return headers;
   }
 
 }

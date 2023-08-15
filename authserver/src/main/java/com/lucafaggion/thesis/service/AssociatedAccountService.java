@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
@@ -28,7 +29,13 @@ import com.lucafaggion.thesis.repository.UserRepository;
 import com.lucafaggion.thesis.service.exceptions.RefreshTokenExpiredException;
 import com.lucafaggion.thesis.service.interfaces.UserAssociatedAccountService;
 
-public class AssociatedAccountService<M, N, R extends TokenResponse, U extends UserAssociatedAccount> implements UserAssociatedAccountService<M, N, R, U> {
+/**
+ * AssociatedAccountService e una classe astratta creata per ridurre la code duplication
+ * fornisce un servizio per ricevere, gestire e eseguire il refresh dei token di accesso indipendente dal servizio
+ * 
+ * Implementata tramite il Template pattern.
+ */
+public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U extends UserAssociatedAccount> {
 
   private final static Logger logger = LoggerFactory.getLogger(AssociatedAccountService.class);
   public final RestTemplate restTemplate;
@@ -40,6 +47,8 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
   private final Class<R> tokenResponseType;
   private final Class<U> userResponseType;
   private final String serviceName;
+  private static long refreshTokenValidity = 15638400;
+  private static long tokenValidity = 7200;
 
   public AssociatedAccountService(
       UserRepository userRepository,
@@ -62,12 +71,29 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
     this.serviceName = serviceName;
   }
 
-  @Override
-  public R getUserToken(M tokenRequestMessage) {
+  protected abstract HttpHeaders buildTokenRequestHeaders(HttpHeaders headers, M tokenRequestMessage);
+
+  protected abstract HttpHeaders buildRefreshTokenRequestHeaders(HttpHeaders headers, N tokenRequestMessage);
+
+  /**
+   * DefaultHeaders per ogni richiesta
+   * sono puoi nel caso modificati dalle implementazioni buildTokenRequestHeaders e buildRefreshTokenRequestHeaders
+   * @return HttpHeaders
+   */
+  protected HttpHeaders buildDefaultHeaders() {
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    // Creaiamo la richiesta
+    return headers;
+  }
+
+  /**
+   * Reindireizza l'utente versa la pagina di autorizzazione del servizio
+   */
+  public abstract ModelAndView redirectToAuthorize();
+
+  protected R getUserToken(M tokenRequestMessage) {
+    HttpHeaders headers = buildDefaultHeaders();
+    headers = buildTokenRequestHeaders(headers, tokenRequestMessage);
     HttpEntity<M> request = new HttpEntity<M>(tokenRequestMessage, headers);
     // eseguiamo la richesta
     ResponseEntity<R> response = this.restTemplate.exchange(this.tokenUri, HttpMethod.POST, request, this.tokenResponseType);
@@ -78,8 +104,7 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
     return null;
   }
 
-  @Override
-  public U getAuthenticatedUser(R tokenResponse) {
+  protected U getAuthenticatedUser(R tokenResponse) {
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     headers.setBearerAuth(tokenResponse.getAccess_token());
@@ -93,8 +118,7 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
     return null;
   }
 
-  @Override
-  public void addAssociatedAccountTo(Authentication authentication, U userAssociatedAccount, R tokenResponse) {
+  protected void addAssociatedAccountTo(Authentication authentication, U userAssociatedAccount, R tokenResponse) {
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
     User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
     ExternalService service = externalServiceRepository.findByName(this.serviceName).orElseThrow();
@@ -102,11 +126,12 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
     userAssociatedAccount.setToken(tokenResponse.getAccess_token());
     userAssociatedAccount.setRefresh_token(tokenResponse.getAccess_token());
     
+    Instant validUntil = Instant.now().plusSeconds(tokenValidity); // valido per 2 ore di base
     if (tokenResponse.getExpires_in() != null) {
-      Instant validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
-      userAssociatedAccount.setToken_valid_until(new Date(validUntil.toEpochMilli()));
+      validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
     }
-    Instant refreshValidUntil = Instant.now().plusSeconds(15638400); // valido per 6 mesi di base
+    userAssociatedAccount.setToken_valid_until(new Date(validUntil.toEpochMilli()));
+    Instant refreshValidUntil = Instant.now().plusSeconds(refreshTokenValidity); // valido per 6 mesi di base
     if (tokenResponse.getRefresh_token_expires_in() != null) {
       refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
     }
@@ -117,20 +142,16 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
     this.userRepository.save(user);
   }
 
-  @Override
   public U refreshTokenForUser(U userAssociatedAccount, N tokenRequestMessage) {
     Date current = new Date();
     // Se il refresh token valid time e prima della data attuale lanciamo un errore
     if (userAssociatedAccount.getRefresh_token_valid_until().before(current)) {
       throw new RefreshTokenExpiredException();
     }
-
     // Se il token valid time e prima della data attuale dobbiamo generarne un altro utilizzando il refresh token
     if (userAssociatedAccount.getToken_valid_until().before(current)) {
-
-
-      HttpHeaders headers = new HttpHeaders();
-      headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+      HttpHeaders headers = buildDefaultHeaders();
+      headers = buildRefreshTokenRequestHeaders(headers, tokenRequestMessage);
       // Creaiamo la richiesta
       HttpEntity<N> request = new HttpEntity<N>(tokenRequestMessage, headers);
       // eseguiamo la richesta
@@ -138,8 +159,14 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
       if (response.getStatusCode() == HttpStatus.OK) {
         R tokenResponse = response.getBody();
 
-        Instant validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
-        Instant refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
+        Instant validUntil = Instant.now().plusSeconds(tokenValidity);
+        if (tokenResponse.getExpires_in() != null) {
+          validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
+        }
+        Instant refreshValidUntil = Instant.now().plusSeconds(refreshTokenValidity);
+        if (tokenResponse.getRefresh_token_expires_in() != null) {
+          refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
+        }
 
         userAssociatedAccount.setToken(tokenResponse.getAccess_token());
         userAssociatedAccount.setRefresh_token(tokenResponse.getAccess_token());
@@ -152,9 +179,7 @@ public class AssociatedAccountService<M, N, R extends TokenResponse, U extends U
     return userAssociatedAccount;
   }
 
-  @Override
-  public void exchangeAndSave(Authentication authentication, M tokenRequestMessage) {
-    
+  public void exchangeAndSave(Authentication authentication, M tokenRequestMessage) { 
     R tokenResponse = this.getUserToken(tokenRequestMessage);
     if (tokenResponse != null) {
       U associatedAccount = this.getAuthenticatedUser(tokenResponse);

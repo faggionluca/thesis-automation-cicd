@@ -3,6 +3,8 @@ package com.lucafaggion.thesis.service;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -22,7 +24,8 @@ import com.lucafaggion.thesis.repository.UserRepository;
 
 @Service
 public class BitBucketAssociatedAccountService
-    extends AssociatedAccountService<MultiValueMap<String, String>, OAuthRefreshTokenRequest, OAuthTokenResponse, BitbucketAccount> {
+    extends
+    AssociatedAccountService<MultiValueMap<String, String>, MultiValueMap<String, String>, OAuthTokenResponse, BitbucketAccount> {
 
   @Value("${com.lucafaggion.oauth.client.bitbucket.client-id}")
   private String bitbucketClientId;
@@ -50,12 +53,12 @@ public class BitBucketAssociatedAccountService
         serviceName);
   }
 
+  @Override
   public ModelAndView redirectToAuthorize() {
     String uri = String.format(bitbucketUri + "?client_id=%s&response_type=code&state=randomstring", bitbucketClientId);
     return new ModelAndView("redirect:" + uri);
   }
 
-  
   public void exchangeAndSave(Authentication authentication, String code) {
     BitBucketTokenRequest tokenRequest = BitBucketTokenRequest.builder()
         .client_id(bitbucketClientId)
@@ -77,9 +80,26 @@ public class BitBucketAssociatedAccountService
         .grant_type("refresh_token")
         .refresh_token(userAssociatedAccount.getRefresh_token())
         .build();
-    super.refreshTokenForUser((BitbucketAccount)userAssociatedAccount, refreshTokenRequest);
+    MultiValueMap<String, String> valueMap = new LinkedMultiValueMap<String, String>();
+    valueMap.put("client_id", Collections.singletonList(refreshTokenRequest.getClient_id()));
+    valueMap.put("client_secret", Collections.singletonList(refreshTokenRequest.getClient_secret()));
+    valueMap.put("grant_type", Collections.singletonList(refreshTokenRequest.getGrant_type()));
+    valueMap.put("refresh_token", Collections.singletonList(refreshTokenRequest.getRefresh_token()));
+    super.refreshTokenForUser((BitbucketAccount) userAssociatedAccount, valueMap);
     return userAssociatedAccount;
   }
 
+  @Override
+  protected HttpHeaders buildTokenRequestHeaders(HttpHeaders headers,
+      MultiValueMap<String, String> tokenRequestMessage) {
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    return headers;
+  }
 
+  @Override
+  protected HttpHeaders buildRefreshTokenRequestHeaders(HttpHeaders headers,
+      MultiValueMap<String, String> tokenRequestMessage) {
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    return headers;
+  }
 }
