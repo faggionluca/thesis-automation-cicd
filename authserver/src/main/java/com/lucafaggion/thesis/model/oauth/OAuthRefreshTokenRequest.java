@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.model.github;
+package com.lucafaggion.thesis.model.oauth;
 
 import com.lucafaggion.thesis.model.interfaces.TokenRefreshRequest;
 
@@ -12,7 +12,7 @@ import lombok.NonNull;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GitHubRefreshTokenExchange implements TokenRefreshRequest {
+public class OAuthRefreshTokenRequest implements TokenRefreshRequest {
   @NonNull
   private String client_id;
   @NonNull

@@ -26,10 +26,11 @@ import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 import com.lucafaggion.thesis.model.CustomUserDetails;
-import com.lucafaggion.thesis.model.github.GitHubTokenExchange;
-import com.lucafaggion.thesis.model.github.GitHubTokenResponse;
+import com.lucafaggion.thesis.model.oauth.OAuthTokenRequest;
+import com.lucafaggion.thesis.model.oauth.OAuthTokenResponse;
 import com.lucafaggion.thesis.repository.ExternalServiceRepository;
 import com.lucafaggion.thesis.repository.UserRepository;
+import com.lucafaggion.thesis.service.BitBucketAssociatedAccountService;
 import com.lucafaggion.thesis.service.GitHubAssociatedAccountService;
 
 @RestController
@@ -37,77 +38,37 @@ public class UserAssociatedAccountController {
 
   @Autowired
   GitHubAssociatedAccountService gitHubAssociatedAccountService;
-  // @Autowired
-  // UserRepository userRepository;
-  // @Autowired
-  // ExternalServiceRepository externalServiceRepository;
 
-  // @Value("${com.lucafaggion.oauth.client.github.client-id}")
-  // private String githubClientId;
-  // @Value("${com.lucafaggion.oauth.client.github.client-secret}")
-  // private String githubClientSecret;
-  // @Value("${com.lucafaggion.oauth.client.github.uri}")
-  // private String githubUri;
-  // @Value("${com.lucafaggion.oauth.client.github.scopes}")
-  // private String githubScopes;
-  // @Value("${com.lucafaggion.oauth.client.github.access-token-uri}")
-  // private String githubAccessTokenUri;
-  // @Value("${com.lucafaggion.oauth.client.github.service-name}")
-  // private String githubServiceName;
+  @Autowired
+  BitBucketAssociatedAccountService bitBucketAssociatedAccountService;
 
   private final static Logger logger = LoggerFactory.getLogger(UserAssociatedAccountController.class);
+
+  // ----------------------- GITHUB -----------------------------
 
   @GetMapping("/user/add/github")
   public ModelAndView addGitHubAccount() {
     return gitHubAssociatedAccountService.redirectToAuthorize();
-    // String uri = String.format(githubUri + "?client_id=%s&scope=%s&state=randomstring", githubClientId, githubScopes);
-    // return new ModelAndView("redirect:" + uri);
   }
 
   @GetMapping("/user/gh/callback")
   @ResponseBody
   public void callbackGitHub(@RequestParam String code, Authentication authentication) {
-    // TODO: astrarre tutto il codice per poter essere riutilizzato da diffenti
-    // servizi, bitcucket github etc!!
-    // TODO: spostare tutti le classi POJO legate ai servizi nel progetto common!!
     logger.debug("Code callback is {}", code);
-
     gitHubAssociatedAccountService.exchangeAndSave(authentication, code);
-    // RestTemplate restTemplate = new RestTemplate();
+  }
 
-    // HttpHeaders headers = new HttpHeaders();
-    // headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+  // ----------------------- BITBUCKET -----------------------------
 
-    // GitHubTokenExchange exGitHubTokenExchange =
-    // GitHubTokenExchange.builder().client_id(githubClientId)
-    // .client_secret(githubClientSecret).code(code).build();
-    // // Creaiamo la richiesta
-    // HttpEntity<GitHubTokenExchange> request = new
-    // HttpEntity<GitHubTokenExchange>(exGitHubTokenExchange, headers);    // // eseguiamo la richesta
-    // ResponseEntity<GitHubTokenResponse> response =
-    // restTemplate.exchange(githubAccessTokenUri, HttpMethod.POST, request,
-    // GitHubTokenResponse.class);
-    // if (response.getStatusCode() == HttpStatus.OK) {
-    // GitHubTokenResponse tokenResponse = response.getBody();
+  @GetMapping("/user/add/bitbucket")
+  public ModelAndView addBitBucketAccount() {
+    return bitBucketAssociatedAccountService.redirectToAuthorize();
+  }
 
-    // // TODO: rimodulare UserAssociatedAccount con sottoclassi
-    // GithubAssociatedAccount, BitbucketAssociatedAccount etc.
-    // // TODO: recuperare i dettagli dell'account e salvarli insieme al token
-
-    // CustomUserDetails userDetails = (CustomUserDetails)
-    // authentication.getPrincipal();
-    // User user =
-    // userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-    // ExternalService service =
-    // externalServiceRepository.findByName(githubServiceName).orElseThrow();
-    // UserAssociatedAccount userAssociatedAccount = UserAssociatedAccount.builder()
-    // .token(tokenResponse.getAccess_token())
-    // .service(service)
-    // .build();
-
-    // user.getUserAssociatedAccounts().add(userAssociatedAccount);
-    // userRepository.save(user);
-    // logger.debug(tokenResponse.toString());
-    // }
+  @GetMapping("/user/bucket/callback")
+  @ResponseBody
+  public void callbackBitBucket(@RequestParam String code, Authentication authentication) {
+    logger.debug("Code callback is {}", code);
+    bitBucketAssociatedAccountService.exchangeAndSave(authentication, code);
   }
 }

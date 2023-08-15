@@ -1,18 +1,18 @@
-package com.lucafaggion.thesis.model.github;
+package com.lucafaggion.thesis.model.oauth;
 
 import com.lucafaggion.thesis.model.interfaces.TokenRequest;
 
 import io.micrometer.common.lang.NonNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GitHubTokenExchange implements TokenRequest {
+public class OAuthTokenRequest implements TokenRequest {
   @NonNull
   private String client_id;
   @NonNull

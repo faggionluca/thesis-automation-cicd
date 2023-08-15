@@ -28,7 +28,7 @@ import com.lucafaggion.thesis.repository.UserRepository;
 import com.lucafaggion.thesis.service.exceptions.RefreshTokenExpiredException;
 import com.lucafaggion.thesis.service.interfaces.UserAssociatedAccountService;
 
-public class AssociatedAccountService<M extends TokenRequest, N extends TokenRefreshRequest, R extends TokenResponse, U extends UserAssociatedAccount> implements UserAssociatedAccountService<M, N, R, U> {
+public class AssociatedAccountService<M, N, R extends TokenResponse, U extends UserAssociatedAccount> implements UserAssociatedAccountService<M, N, R, U> {
 
   private final static Logger logger = LoggerFactory.getLogger(AssociatedAccountService.class);
   public final RestTemplate restTemplate;
@@ -66,6 +66,7 @@ public class AssociatedAccountService<M extends TokenRequest, N extends TokenRef
   public R getUserToken(M tokenRequestMessage) {
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     // Creaiamo la richiesta
     HttpEntity<M> request = new HttpEntity<M>(tokenRequestMessage, headers);
     // eseguiamo la richesta
@@ -85,7 +86,7 @@ public class AssociatedAccountService<M extends TokenRequest, N extends TokenRef
     // Creaiamo la richiesta
     HttpEntity<Object> request = new HttpEntity<Object>(null, headers);
     // eseguiamo la richesta
-    ResponseEntity<U> response = this.restTemplate.exchange(this.userUri, HttpMethod.POST, request, this.userResponseType);
+    ResponseEntity<U> response = this.restTemplate.exchange(this.userUri, HttpMethod.GET, request, this.userResponseType);
     if (response.getStatusCode() == HttpStatus.OK) {
       return response.getBody();
     }
@@ -94,17 +95,23 @@ public class AssociatedAccountService<M extends TokenRequest, N extends TokenRef
 
   @Override
   public void addAssociatedAccountTo(Authentication authentication, U userAssociatedAccount, R tokenResponse) {
-
-    Instant validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
-    Instant refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
-
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
     User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
     ExternalService service = externalServiceRepository.findByName(this.serviceName).orElseThrow();
+
     userAssociatedAccount.setToken(tokenResponse.getAccess_token());
     userAssociatedAccount.setRefresh_token(tokenResponse.getAccess_token());
-    userAssociatedAccount.setToken_valid_until(new Date(validUntil.toEpochMilli()));
+    
+    if (tokenResponse.getExpires_in() != null) {
+      Instant validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
+      userAssociatedAccount.setToken_valid_until(new Date(validUntil.toEpochMilli()));
+    }
+    Instant refreshValidUntil = Instant.now().plusSeconds(15638400); // valido per 6 mesi di base
+    if (tokenResponse.getRefresh_token_expires_in() != null) {
+      refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
+    }
     userAssociatedAccount.setRefresh_token_valid_until(new Date(refreshValidUntil.toEpochMilli()));
+
     userAssociatedAccount.setService(service);
     user.getUserAssociatedAccounts().add(userAssociatedAccount);
     this.userRepository.save(user);

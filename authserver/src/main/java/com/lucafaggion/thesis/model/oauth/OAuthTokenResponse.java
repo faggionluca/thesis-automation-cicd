@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.model.github;
+package com.lucafaggion.thesis.model.oauth;
 
 import com.lucafaggion.thesis.model.interfaces.TokenResponse;
 
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GitHubTokenResponse implements TokenResponse{
+public class OAuthTokenResponse implements TokenResponse{
   private String access_token;
   private String scope;
   private String token_type;

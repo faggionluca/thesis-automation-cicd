@@ -13,6 +13,7 @@ services:
       - thesis-devdb:/var/lib/postgresql/data
   pgAdmin:
     image: dpage/pgadmin4
+    restart: unless-stopped
     ports:
       - 9080:80
     networks:
@@ -23,6 +24,7 @@ services:
     volumes:
       - pgAdminThesis:/var/lib/pgadmin
   rabbitmq:
+    restart: unless-stopped
     image: rabbitmq:3-management
     networks:
       - thesis-network

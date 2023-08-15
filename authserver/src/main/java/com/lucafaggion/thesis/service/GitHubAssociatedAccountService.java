@@ -7,16 +7,16 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 import com.lucafaggion.thesis.common.model.UserAssociated.github.GitHubAccount;
-import com.lucafaggion.thesis.model.github.GitHubRefreshTokenExchange;
-import com.lucafaggion.thesis.model.github.GitHubTokenExchange;
-import com.lucafaggion.thesis.model.github.GitHubTokenResponse;
+import com.lucafaggion.thesis.model.oauth.OAuthRefreshTokenRequest;
+import com.lucafaggion.thesis.model.oauth.OAuthTokenRequest;
+import com.lucafaggion.thesis.model.oauth.OAuthTokenResponse;
 import com.lucafaggion.thesis.repository.ExternalServiceRepository;
 import com.lucafaggion.thesis.repository.UserAssociatedAccountRepository;
 import com.lucafaggion.thesis.repository.UserRepository;
 
 @Service
 public class GitHubAssociatedAccountService
-    extends AssociatedAccountService<GitHubTokenExchange, GitHubRefreshTokenExchange, GitHubTokenResponse, GitHubAccount> {
+    extends AssociatedAccountService<OAuthTokenRequest, OAuthRefreshTokenRequest, OAuthTokenResponse, GitHubAccount> {
 
   @Value("${com.lucafaggion.oauth.client.github.client-id}") 
   private String githubClientId;
@@ -39,7 +39,7 @@ public class GitHubAssociatedAccountService
         userAssociatedAccountRepository,
         githubAccessTokenUri,
         githubUserUri,
-        GitHubTokenResponse.class,
+        OAuthTokenResponse.class,
         GitHubAccount.class,
         githubServiceName);
   }
@@ -50,7 +50,7 @@ public class GitHubAssociatedAccountService
   }
 
   public void exchangeAndSave(Authentication authentication, String code) {
-    GitHubTokenExchange gitHubTokenExchange = GitHubTokenExchange.builder()
+    OAuthTokenRequest gitHubTokenExchange = OAuthTokenRequest.builder()
         .client_id(githubClientId)
         .client_secret(githubClientSecret)
         .code(code)
@@ -59,7 +59,7 @@ public class GitHubAssociatedAccountService
   }
 
   public UserAssociatedAccount refreshTokenForUser(UserAssociatedAccount userAssociatedAccount) {
-    GitHubRefreshTokenExchange gitHubRefreshTokenExchange = GitHubRefreshTokenExchange.builder()
+    OAuthRefreshTokenRequest gitHubRefreshTokenExchange = OAuthRefreshTokenRequest.builder()
         .client_id(githubClientId)
         .client_secret(githubClientSecret)
         .grant_type("refresh_token")
