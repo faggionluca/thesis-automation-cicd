@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucafaggion.thesis.common.model.User;
+import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,6 +16,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -51,5 +53,6 @@ public class RepoPushEvent extends RepoEvent {
   }
 
   @Embedded
-  private CurrentStatus status;
+  @Builder.Default
+  private CurrentStatus status = ExceptionStatusUtils.defaultStatus();
 }

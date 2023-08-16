@@ -5,17 +5,24 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RunnerTaskConfigTest extends ModelFixtures{
+public class RunnerTaskConfigTest extends RepoTest {
 
-  @Test
-  void runnerTaskConfigDeserialize() throws IOException {
+  protected RunnerTaskConfig runnerTaskConfig;
+
+  @BeforeEach
+  void setUpRunnerTaskConfig() throws IOException {
     // Carichiamo la config
     String config = ModelFixtures.loadConfig("runnerTaskConfig");
-    
     // Testiamo la deserializzazione
-    RunnerTaskConfig runnerTaskConfig = ModelFixtures.mapper.readValue(config, RunnerTaskConfig.class);
+    runnerTaskConfig = ModelFixtures.mapper.readValue(config, RunnerTaskConfig.class);
+  }
+
+  @Test
+  void runnerTaskConfigDeserialize() {
 
     assertNotNull(runnerTaskConfig, "Deserialized object must not be null");
     assertTrue(runnerTaskConfig.getOnEvent().size() > 0, "getOn must have a size > 0 ");

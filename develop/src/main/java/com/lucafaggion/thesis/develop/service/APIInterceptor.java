@@ -38,7 +38,7 @@ public class APIInterceptor implements ClientHttpRequestInterceptor {
       throws IOException {
     HttpHeaders headers = request.getHeaders();
 
-    logger.debug("Intercepting ClientHttpRequest with Headers: {} and body: {}", headers);
+    logger.debug("Intercepting ClientHttpRequest with Headers: {}", headers);
     // Aggiungiamo l'header accept se non ne abbiamo gia specificato uno
     if (headers.getAccept().isEmpty()) {
       request.getHeaders().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));

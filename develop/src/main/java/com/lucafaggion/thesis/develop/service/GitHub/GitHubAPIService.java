@@ -52,6 +52,10 @@ public class GitHubAPIService {
     return headers.containsKey("x-github-event");
   }
 
+  public boolean accept(String name) {
+    return serviceName.equals(name);
+  }
+
   public RunnerTaskConfig retriveConfig(RepoPushEvent repoPushEvent) throws JsonMappingException, JsonProcessingException, HttpClientErrorException {
 
     // Aggiungiamo gli Headers se il repo e' privato aggiungiamo AUTHORIZE_USER_HEADER per l'APIInterceptor

@@ -5,8 +5,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
-import com.lucafaggion.thesis.develop.AppIntegrationTestConfiguration;
-
 @Import(AppIntegrationTestConfiguration.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)

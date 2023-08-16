@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model.util;
+package com.lucafaggion.thesis.develop.util;
 
 import java.util.Date;
 

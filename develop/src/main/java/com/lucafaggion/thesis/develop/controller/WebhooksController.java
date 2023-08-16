@@ -20,10 +20,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.lucafaggion.thesis.develop.model.CurrentStatus;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.enums.Status;
-import com.lucafaggion.thesis.develop.model.util.ExceptionStatusUtils;
 import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
 import com.lucafaggion.thesis.develop.service.WebhookService;
 import com.lucafaggion.thesis.develop.service.GitHub.GitHubAPIService;
+import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 @RestController
 public class WebhooksController {
