@@ -21,7 +21,7 @@ public class UserController {
 
   private final static Logger logger = LoggerFactory.getLogger(UserController.class);
 
-  @GetMapping("/api/user/delete")
+  @GetMapping("/auth-api/user/delete")
   public void deleteUser() {
     logger.debug("user/delete");
   }

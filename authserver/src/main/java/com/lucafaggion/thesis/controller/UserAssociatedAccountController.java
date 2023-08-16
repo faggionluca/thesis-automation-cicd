@@ -46,29 +46,29 @@ public class UserAssociatedAccountController {
 
   // ----------------------- GITHUB -----------------------------
 
-  @GetMapping("/user/add/github")
+  @GetMapping("/auth/link/github")
   public ModelAndView addGitHubAccount() {
     return gitHubAssociatedAccountService.redirectToAuthorize();
   }
 
-  @GetMapping("/user/gh/callback")
+  @GetMapping("/auth/gh/callback")
   @ResponseBody
   public void callbackGitHub(@RequestParam String code, Authentication authentication) {
-    logger.debug("Code callback is {}", code);
+    logger.debug("GITHUB Code callback is {}", code);
     gitHubAssociatedAccountService.exchangeAndSave(authentication, code);
   }
 
   // ----------------------- BITBUCKET -----------------------------
 
-  @GetMapping("/user/add/bitbucket")
+  @GetMapping("/auth/link/bitbucket")
   public ModelAndView addBitBucketAccount() {
     return bitBucketAssociatedAccountService.redirectToAuthorize();
   }
 
-  @GetMapping("/user/bucket/callback")
+  @GetMapping("/auth/bucket/callback")
   @ResponseBody
   public void callbackBitBucket(@RequestParam String code, Authentication authentication) {
-    logger.debug("Code callback is {}", code);
+    logger.debug("BITBUCKET Code callback is {}", code);
     bitBucketAssociatedAccountService.exchangeAndSave(authentication, code);
   }
 }

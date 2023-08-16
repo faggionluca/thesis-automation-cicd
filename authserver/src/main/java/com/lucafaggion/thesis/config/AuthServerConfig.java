@@ -96,7 +96,7 @@ public class AuthServerConfig {
   @Order(2) // add a new filter chain specially for resource server endpoints
   public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
     return http
-        .securityMatcher("/api/**")
+        .securityMatcher("/auth-api/**")
         .authorizeHttpRequests(
             authorizeRequests -> authorizeRequests.anyRequest().authenticated())
         .csrf((csrf) -> csrf.disable())

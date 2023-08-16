@@ -20,14 +20,11 @@ import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 import com.lucafaggion.thesis.model.CustomUserDetails;
-import com.lucafaggion.thesis.model.interfaces.TokenRefreshRequest;
-import com.lucafaggion.thesis.model.interfaces.TokenRequest;
 import com.lucafaggion.thesis.model.interfaces.TokenResponse;
 import com.lucafaggion.thesis.repository.ExternalServiceRepository;
 import com.lucafaggion.thesis.repository.UserAssociatedAccountRepository;
 import com.lucafaggion.thesis.repository.UserRepository;
 import com.lucafaggion.thesis.service.exceptions.RefreshTokenExpiredException;
-import com.lucafaggion.thesis.service.interfaces.UserAssociatedAccountService;
 
 /**
  * AssociatedAccountService e una classe astratta creata per ridurre la code duplication
@@ -58,8 +55,7 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
       String userUri,
       Class<R> tokenResponseType,
       Class<U> userResponseType,
-      String serviceName
-    ) {
+      String serviceName) {
     this.restTemplate = new RestTemplate();
     this.userRepository = userRepository;
     this.externalServiceRepository = externalServiceRepository;
@@ -91,12 +87,16 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
    */
   public abstract ModelAndView redirectToAuthorize();
 
+  /*
+   * Scambia il codice di callback con un access_token
+   */
   protected R getUserToken(M tokenRequestMessage) {
     HttpHeaders headers = buildDefaultHeaders();
     headers = buildTokenRequestHeaders(headers, tokenRequestMessage);
     HttpEntity<M> request = new HttpEntity<M>(tokenRequestMessage, headers);
     // eseguiamo la richesta
-    ResponseEntity<R> response = this.restTemplate.exchange(this.tokenUri, HttpMethod.POST, request, this.tokenResponseType);
+    ResponseEntity<R> response = this.restTemplate.exchange(this.tokenUri, HttpMethod.POST, request,
+        this.tokenResponseType);
 
     if (response.getStatusCode() == HttpStatus.OK) {
       return response.getBody();
@@ -104,6 +104,10 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
     return null;
   }
 
+  /*
+   * Recupera dalle api del servizio all'url {userUri}
+   * l'utente attualmente autenticato dall'access_token 
+   */
   protected U getAuthenticatedUser(R tokenResponse) {
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -111,13 +115,19 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
     // Creaiamo la richiesta
     HttpEntity<Object> request = new HttpEntity<Object>(null, headers);
     // eseguiamo la richesta
-    ResponseEntity<U> response = this.restTemplate.exchange(this.userUri, HttpMethod.GET, request, this.userResponseType);
+    ResponseEntity<U> response = this.restTemplate.exchange(this.userUri, HttpMethod.GET, request,
+        this.userResponseType);
     if (response.getStatusCode() == HttpStatus.OK) {
       return response.getBody();
     }
     return null;
   }
 
+  /*
+   * Associa il nostro utente attualmente autenticato con
+   * l'utente autenticato dal servizio esterno
+   * salvando i dati nel database 
+   */
   protected void addAssociatedAccountTo(Authentication authentication, U userAssociatedAccount, R tokenResponse) {
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
     User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
@@ -125,7 +135,7 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
 
     userAssociatedAccount.setToken(tokenResponse.getAccess_token());
     userAssociatedAccount.setRefresh_token(tokenResponse.getAccess_token());
-    
+
     Instant validUntil = Instant.now().plusSeconds(tokenValidity); // valido per 2 ore di base
     if (tokenResponse.getExpires_in() != null) {
       validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
@@ -142,6 +152,12 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
     this.userRepository.save(user);
   }
 
+  /*
+   * Scambia un RefreshToken per un nuovo Access_token
+   * Se necessario.
+   * Se anche il RefreshToken è scaduto allora throw RefreshTokenExpiredException
+   * ovvero l'utente deve ri authenticarsi con il OAuth flow
+   */
   public U refreshTokenForUser(U userAssociatedAccount, N tokenRequestMessage) {
     Date current = new Date();
     // Se il refresh token valid time e prima della data attuale lanciamo un errore
@@ -155,7 +171,8 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
       // Creaiamo la richiesta
       HttpEntity<N> request = new HttpEntity<N>(tokenRequestMessage, headers);
       // eseguiamo la richesta
-      ResponseEntity<R> response = this.restTemplate.exchange(this.tokenUri, HttpMethod.POST, request, this.tokenResponseType);
+      ResponseEntity<R> response = this.restTemplate.exchange(this.tokenUri, HttpMethod.POST, request,
+          this.tokenResponseType);
       if (response.getStatusCode() == HttpStatus.OK) {
         R tokenResponse = response.getBody();
 
@@ -179,7 +196,12 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
     return userAssociatedAccount;
   }
 
-  public void exchangeAndSave(Authentication authentication, M tokenRequestMessage) { 
+  /*
+   * Esegue le operazioni di scambio del code con access_token
+   * recupera i dati del'utente e associa l'utente del servizio
+   * esterno con il nostro utente autenticato e salva i dati nel database
+   */
+  public void exchangeAndSave(Authentication authentication, M tokenRequestMessage) {
     R tokenResponse = this.getUserToken(tokenRequestMessage);
     if (tokenResponse != null) {
       U associatedAccount = this.getAuthenticatedUser(tokenResponse);
