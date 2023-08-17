@@ -47,7 +47,7 @@ public class RepoPushEvent extends RepoEvent {
   @JsonIgnore
   private RunnerTaskConfig config;
 
-  void addConfig(RunnerTaskConfig config) {
+  public void addConfig(RunnerTaskConfig config) {
     this.config = config;
     config.setEvent(this);
   }

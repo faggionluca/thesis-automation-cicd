@@ -1,5 +1,6 @@
 package com.lucafaggion.thesis.develop.service.GitHub;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -9,10 +10,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,7 +36,12 @@ import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 import com.lucafaggion.thesis.develop.model.Repo;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
+import com.lucafaggion.thesis.develop.model.GitHub.GitHubFileContentResponse;
+import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
+import com.lucafaggion.thesis.develop.repository.RepoRepository;
 import com.lucafaggion.thesis.develop.service.APIInterceptor;
+import com.lucafaggion.thesis.develop.service.exceptions.ConfigurationNotFoundException;
+import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 @Service
 public class GitHubAPIService {
@@ -42,10 +50,14 @@ public class GitHubAPIService {
 
   private final static Logger logger = LoggerFactory.getLogger(GitHubAPIService.class);
 
+  protected final String baseUrl = "https://api.github.com";
+  protected final String repoContent = "/repos/{repo_user}/{repo_name}/contents";
+
   @Autowired
   private RestTemplate restTemplate;
 
   @Autowired
+  @Qualifier("yamlObjectMapper")
   private ObjectMapper mapper;
 
   public boolean accept(HttpHeaders headers) {
@@ -56,9 +68,11 @@ public class GitHubAPIService {
     return serviceName.equals(name);
   }
 
-  public RunnerTaskConfig retriveConfig(RepoPushEvent repoPushEvent) throws JsonMappingException, JsonProcessingException, HttpClientErrorException {
+  public RunnerTaskConfig retriveConfig(RepoPushEvent repoPushEvent)
+      throws HttpClientErrorException, IOException {
 
-    // Aggiungiamo gli Headers se il repo e' privato aggiungiamo AUTHORIZE_USER_HEADER per l'APIInterceptor
+    // Aggiungiamo gli Headers se il repo e' privato aggiungiamo
+    // AUTHORIZE_USER_HEADER per l'APIInterceptor
     // APIInterceptor aggiungera automaticamente il corretto Bearer token
     HttpHeaders headers = new HttpHeaders();
     if (repoPushEvent.getRepository().getIsPrivate()) {
@@ -71,27 +85,26 @@ public class GitHubAPIService {
 
     // Creaiamo la richiesta
     HttpEntity<String> request = new HttpEntity<String>(headers);
-    String url = "https://api.github.com/repos/{repo_user}/{repo_name}/contents/config.yml?ref={ref}";
+    String url = baseUrl + repoContent + "/config.yaml?ref={ref}";
 
     String[] repoUserAndName = repoPushEvent.getRepository().getFull_name().split("/");
     Map<String, String> uriVariables = new HashMap<>();
     uriVariables.put("ref", repoPushEvent.getAfter());
+    uriVariables.put("base_url", baseUrl);
     uriVariables.put("repo_user", repoUserAndName[0]);
     uriVariables.put("repo_name", repoUserAndName[1]);
 
     // eseguiamo la richesta
     try {
-      ResponseEntity<String> response = this.restTemplate.exchange(url, HttpMethod.GET, request, String.class,
-      uriVariables);
+      ResponseEntity<GitHubFileContentResponse> response = this.restTemplate.exchange(url, HttpMethod.GET, request,
+          GitHubFileContentResponse.class,
+          uriVariables);
       if (response.getStatusCode() == HttpStatus.OK) {
-        logger.debug(response.getBody());
-        return mapper.readValue(response.getBody(), RunnerTaskConfig.class);
+        return mapper.readValue(Base64.decodeBase64(response.getBody().getContent()), RunnerTaskConfig.class);
       }
-    } catch (Exception e) {
-      // TODO: handle exception, settare lo status to ERROR con il messaggio (e.getMessage())
-      throw e;
+    } catch (HttpClientErrorException.NotFound e) {
+      throw new ConfigurationNotFoundException(e);
     }
     return null;
   }
-
 }

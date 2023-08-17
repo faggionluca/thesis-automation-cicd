@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 
+import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
 
 public class RunnerTaskConfigIntegrationTest extends ModelIntegrationFixtures {

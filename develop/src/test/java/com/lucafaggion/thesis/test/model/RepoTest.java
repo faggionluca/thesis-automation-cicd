@@ -1,9 +1,12 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import java.math.BigInteger;
 import java.util.HashSet;
 
 import org.junit.jupiter.api.BeforeEach;
+
+import com.lucafaggion.thesis.develop.model.Repo;
+import com.lucafaggion.thesis.develop.model.RepoEvent;
 
 public class RepoTest extends ModelFixtures {
 

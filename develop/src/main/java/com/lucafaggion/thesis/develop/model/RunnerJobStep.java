@@ -58,7 +58,7 @@ public class RunnerJobStep {
   @Builder.Default
   private List<RunnerStepLog> logs = new ArrayList<RunnerStepLog>();
 
-  void addLog(RunnerStepLog log) {
+  public void addLog(RunnerStepLog log) {
     this.logs.add(log);
     log.setStep(this);
   }

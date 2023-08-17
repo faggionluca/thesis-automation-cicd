@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.enums.Status;
 
 public class RepoPushEventTest extends RunnerTaskConfigTest {

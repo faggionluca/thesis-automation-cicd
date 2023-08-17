@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 
 public class RunnerTaskConfigTest extends RepoTest {
 

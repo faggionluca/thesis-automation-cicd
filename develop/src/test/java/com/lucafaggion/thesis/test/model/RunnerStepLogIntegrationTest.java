@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,6 +12,9 @@ import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.Commit;
+
+import com.lucafaggion.thesis.develop.model.RunnerJobStep;
+import com.lucafaggion.thesis.develop.model.RunnerStepLog;
 
 public class RunnerStepLogIntegrationTest extends RunnerJobIntergrationTest {
   

@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import java.io.File;
 import java.io.IOException;

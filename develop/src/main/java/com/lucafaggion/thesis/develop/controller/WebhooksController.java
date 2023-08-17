@@ -39,15 +39,6 @@ public class WebhooksController {
   @Autowired
   GitHubAPIService gitHubAPIService;
 
-  // @PostMapping("/webhook/gh/event/push")
-  // ResponseEntity<HttpStatus> ReceivePushEvent(@RequestBody GitHubPushEvent
-  // gitHubPushEvent) {
-  // RepoPushEvent repoPushEvent =
-  // gitHubWebhookService.toRepoPushEvent(gitHubPushEvent);
-  // repoEventRepository.save(repoPushEvent);
-  // return ResponseEntity.ok(HttpStatus.OK);
-  // }
-
   @PostMapping("/webhook/event/push")
   ResponseEntity<HttpStatus> ReceiveGeneralPushEvent(@RequestHeader HttpHeaders headers, @RequestBody String body)
       throws JsonMappingException, JsonProcessingException {

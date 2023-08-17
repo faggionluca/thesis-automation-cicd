@@ -1,16 +1,10 @@
-package com.lucafaggion.thesis.develop.service;
+package com.lucafaggion.thesis.test.service;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.test.RabbitListenerTest;
+import org.junit.jupiter.api.AfterAll;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-
-import com.lucafaggion.thesis.develop.model.AppIntegrationTestConfiguration;
 
 @Import(AppServiceTestConfiguration.class)
 @SpringBootTest
@@ -20,5 +14,12 @@ import com.lucafaggion.thesis.develop.model.AppIntegrationTestConfiguration;
     "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 public class ServiceFixtures {
-
+  
+  /**
+   * Utilizzabile per il debug, mettedo un breakpoint nel proprio IDE
+   */
+  @AfterAll
+  static void afterAllDebug() {
+    System.out.println("AfterAllDebug");
+  }
 }

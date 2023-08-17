@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.develop.model;
+package com.lucafaggion.thesis.test.model;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Commit;
 
+import com.lucafaggion.thesis.develop.model.Repo;
+import com.lucafaggion.thesis.develop.model.RepoEvent;
+import com.lucafaggion.thesis.develop.model.RepoPushEvent;
+import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
 import com.lucafaggion.thesis.develop.repository.RepoRepository;
 import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
