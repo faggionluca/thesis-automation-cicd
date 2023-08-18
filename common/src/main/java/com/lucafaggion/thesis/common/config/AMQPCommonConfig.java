@@ -16,19 +16,17 @@ import com.lucafaggion.thesis.common.message.SearchUserByUsernameAndService;
 @Configuration
 public class AMQPCommonConfig {
 
-  // public static final String SEARCH_USER_FROM_ASSOCIATED_ROUTE_KEY =
-  // "search-user-associated";
-  // public static final String SEARCH_USER_ASSOCIATED_FROM_USER_ID_ROUTE_KEY =
-  // "search-user-associated-from-user-id";
+  /*
+   * USER_EXCHANGE
+   */
   public static final String USER_EXCHANGE = "x.user";
-  // public static final String USER_EXCHANGE_BEAN = "userExchange";
-
   public static final String USER_ROUTE_KEY = "user_rk";
 
-  // @Bean
-  // public DirectExchange userExchange() {
-  // return new DirectExchange(USER_EXCHANGE);
-  // }
+  /*
+  * EXTERNAL_SERVICE_EXCHANGE
+  */
+  public static final String EXTERNAL_SERVICE_EXCHANGE = "x.external.service";
+  public static final String EXTERNAL_SERVICE_ROUTE_KEY = "external_service_rk";
 
   @Bean
   public MessageConverter jackson2MessageConverter() {

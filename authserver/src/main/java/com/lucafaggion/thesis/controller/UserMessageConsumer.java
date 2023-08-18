@@ -36,17 +36,15 @@ public class UserMessageConsumer {
   UserAssociatedAccountRepository userAssociatedAccountRepository;
 
   @RabbitHandler
-  public User searchUserByUsernameOnServiceUser(SearchUserByUsernameAndService searchUserMessage) {
-    return userRepository.findByUsernameOnService(searchUserMessage.getUsername(), searchUserMessage.getServiceName())
-        .orElse(null);
+  public User searchUserByUsernameOnServiceUser(SearchUserByUsernameAndService request) {
+    return userRepository.findByUsernameOnService(request.getUsername(), request.getServiceName()).orElse(null);
   }
 
   @RabbitHandler
-  public UserAssociatedAccount searchUserAssociatedAccountByUserIdAndServiceName(SearchUserAssociatedByUserAndService searchUserAssociatedByUserAndService) {
+  public UserAssociatedAccount searchUserAssociatedAccountByUserIdAndServiceName(
+      SearchUserAssociatedByUserAndService request) {
     UserAssociatedAccount user = userAssociatedAccountRepository
-        .findByUserIdAndServiceName(searchUserAssociatedByUserAndService.getId(),
-            searchUserAssociatedByUserAndService.getServiceName())
-        .orElse(null);
+        .findByUserIdAndServiceName(request.getId(), request.getServiceName()).orElse(null);
     return user;
   }
 }

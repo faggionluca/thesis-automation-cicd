@@ -60,7 +60,8 @@ public class GitHubAssociatedAccountService
     super.exchangeAndSave(authentication, gitHubTokenExchange);
   }
 
-  public UserAssociatedAccount refreshTokenForUser(UserAssociatedAccount userAssociatedAccount) {
+  @Override
+  public UserAssociatedAccount refreshTokenFor(UserAssociatedAccount userAssociatedAccount) {
     OAuthRefreshTokenRequest gitHubRefreshTokenExchange = OAuthRefreshTokenRequest.builder()
         .client_id(githubClientId)
         .client_secret(githubClientSecret)
@@ -80,6 +81,16 @@ public class GitHubAssociatedAccountService
   protected HttpHeaders buildRefreshTokenRequestHeaders(HttpHeaders headers,
       OAuthRefreshTokenRequest tokenRequestMessage) {
     return headers;
+  }
+
+  @Override
+  protected long defaultTokenValidity() {
+    return 157784630000L; // non scadono mai (5 anni forziamo il refresh)
+  }
+
+  @Override
+  protected long defaultRefreshTokenValidity() {
+    return 157784630000L; // non scadono mai (5 anni forziamo il refresh))
   }
 
 }

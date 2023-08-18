@@ -22,4 +22,9 @@ public class AMQPServerConfig {
    */
   public static final String USER_SEARCH_QUEUE = "q.user-search.request";
 
+  /*
+   * Queue EXTERNAL_SERVICE per eseguire comandi API legati agli External Service Services
+   */
+  public static final String EXTERNAL_SERVICE_QUEUE = "q.external-service.request";
+
 }

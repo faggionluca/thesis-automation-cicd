@@ -25,6 +25,7 @@ import com.lucafaggion.thesis.repository.ExternalServiceRepository;
 import com.lucafaggion.thesis.repository.UserAssociatedAccountRepository;
 import com.lucafaggion.thesis.repository.UserRepository;
 import com.lucafaggion.thesis.service.exceptions.RefreshTokenExpiredException;
+import com.lucafaggion.thesis.service.interfaces.UserAssociatedAccountService;
 
 /**
  * AssociatedAccountService e una classe astratta creata per ridurre la code duplication
@@ -32,7 +33,7 @@ import com.lucafaggion.thesis.service.exceptions.RefreshTokenExpiredException;
  * 
  * Implementata tramite il Template pattern.
  */
-public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U extends UserAssociatedAccount> {
+public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U extends UserAssociatedAccount> implements UserAssociatedAccountService {
 
   private final static Logger logger = LoggerFactory.getLogger(AssociatedAccountService.class);
   public final RestTemplate restTemplate;
@@ -44,8 +45,8 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
   private final Class<R> tokenResponseType;
   private final Class<U> userResponseType;
   private final String serviceName;
-  private static long refreshTokenValidity = 15638400;
-  private static long tokenValidity = 7200;
+  // private static long refreshTokenValidity = 15638400;
+  // private static long tokenValidity = 7200;
 
   public AssociatedAccountService(
       UserRepository userRepository,
@@ -67,9 +68,18 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
     this.serviceName = serviceName;
   }
 
+  @Override
+  public boolean forService(String name) {
+    return serviceName.equals(name);
+  }
+
   protected abstract HttpHeaders buildTokenRequestHeaders(HttpHeaders headers, M tokenRequestMessage);
 
   protected abstract HttpHeaders buildRefreshTokenRequestHeaders(HttpHeaders headers, N tokenRequestMessage);
+
+  protected abstract long defaultTokenValidity();
+
+  protected abstract long defaultRefreshTokenValidity();
 
   /**
    * DefaultHeaders per ogni richiesta
@@ -136,12 +146,13 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
     userAssociatedAccount.setToken(tokenResponse.getAccess_token());
     userAssociatedAccount.setRefresh_token(tokenResponse.getAccess_token());
 
-    Instant validUntil = Instant.now().plusSeconds(tokenValidity); // valido per 2 ore di base
+    Instant validUntil = Instant.now().plusMillis(defaultTokenValidity());
     if (tokenResponse.getExpires_in() != null) {
       validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
     }
     userAssociatedAccount.setToken_valid_until(new Date(validUntil.toEpochMilli()));
-    Instant refreshValidUntil = Instant.now().plusSeconds(refreshTokenValidity); // valido per 6 mesi di base
+
+    Instant refreshValidUntil = Instant.now().plusMillis(defaultRefreshTokenValidity());
     if (tokenResponse.getRefresh_token_expires_in() != null) {
       refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
     }
@@ -176,11 +187,11 @@ public abstract class AssociatedAccountService<M, N, R extends TokenResponse, U 
       if (response.getStatusCode() == HttpStatus.OK) {
         R tokenResponse = response.getBody();
 
-        Instant validUntil = Instant.now().plusSeconds(tokenValidity);
+        Instant validUntil = Instant.now().plusMillis(defaultTokenValidity());
         if (tokenResponse.getExpires_in() != null) {
           validUntil = Instant.now().plusSeconds(tokenResponse.getExpires_in());
         }
-        Instant refreshValidUntil = Instant.now().plusSeconds(refreshTokenValidity);
+        Instant refreshValidUntil = Instant.now().plusMillis(defaultRefreshTokenValidity());
         if (tokenResponse.getRefresh_token_expires_in() != null) {
           refreshValidUntil = Instant.now().plusSeconds(tokenResponse.getRefresh_token_expires_in());
         }

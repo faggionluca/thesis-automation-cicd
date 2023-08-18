@@ -102,4 +102,20 @@ public class BitBucketAssociatedAccountService
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     return headers;
   }
+
+  @Override
+  public UserAssociatedAccount refreshTokenFor(UserAssociatedAccount account) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'refreshTokenFor'");
+  }
+
+  @Override
+  protected long defaultTokenValidity() {
+    return 72000000L; // 2 ore
+  }
+
+  @Override
+  protected long defaultRefreshTokenValidity() {
+    return 18408600000L; //6 mesi
+  }
 }

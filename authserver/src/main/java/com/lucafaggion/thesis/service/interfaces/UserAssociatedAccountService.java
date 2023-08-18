@@ -1,17 +1,11 @@
 package com.lucafaggion.thesis.service.interfaces;
 
-import org.springframework.security.core.Authentication;
+import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 
-public interface UserAssociatedAccountService<M, N, R, U> {
+public interface UserAssociatedAccountService {
 
-  R getUserToken(M tokenRequestMessage);
+  public boolean forService(String serviceName);
 
-  U getAuthenticatedUser(R tokenResponse);
-
-  U refreshTokenForUser(U userAssociatedAccount, N tokenRequestMessage);
-
-  void addAssociatedAccountTo(Authentication authentication, U userAssociatedAccount, R tokenResponse);
-
-  void exchangeAndSave(Authentication authentication, M tokenRequestMessage);
+  public UserAssociatedAccount refreshTokenFor(UserAssociatedAccount account);
 
 }
