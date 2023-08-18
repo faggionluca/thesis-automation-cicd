@@ -11,37 +11,15 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucafaggion.thesis.common.config.AMQPCommonConfig;
 
+/**
+ * Classe di configurazione delle Queue di Spring AMQP
+ */
 @Configuration
 public class AMQPServerConfig {
   
+  /*
+   * Queue USER_SEARCH_QUEUE per eseguire query sugli utenti
+   */
   public static final String USER_SEARCH_QUEUE = "q.user-search.request";
-  public static final String USER_ASSOCIATED_FROM_USER_ID_SEARCH_QUEUE = "q.user-associated.from-user-id.request";
 
-  @Bean
-  public Queue userSearchQueue() {
-    return new Queue(USER_SEARCH_QUEUE);
-  }
-
-  @Bean
-  public Queue userAssociatedFromUserId() {
-    return new Queue(USER_ASSOCIATED_FROM_USER_ID_SEARCH_QUEUE);
-  }
-
-  @Bean
-  public Binding userSearchBinding(
-      @Qualifier(AMQPCommonConfig.USER_EXCHANGE_BEAN) DirectExchange exchange) {
-    return BindingBuilder
-        .bind(userSearchQueue())
-        .to(exchange)
-        .with(AMQPCommonConfig.SEARCH_USER_FROM_ASSOCIATED_ROUTE_KEY);
-  }
-
-  @Bean
-  public Binding userAssociatedFromUserIdSearchBinding(
-      @Qualifier(AMQPCommonConfig.USER_EXCHANGE_BEAN) DirectExchange exchange) {
-    return BindingBuilder
-        .bind(userAssociatedFromUserId())
-        .to(exchange)
-        .with(AMQPCommonConfig.SEARCH_USER_ASSOCIATED_FROM_USER_ID_ROUTE_KEY);
-  }
 }

@@ -3,13 +3,18 @@ package com.lucafaggion.thesis.controller;
 import java.math.BigInteger;
 
 import org.hibernate.Hibernate;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lucafaggion.thesis.common.config.AMQPCommonConfig;
 import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUserAndService;
-import com.lucafaggion.thesis.common.message.SearchUserMessage;
+import com.lucafaggion.thesis.common.message.SearchUserByUsernameAndService;
 import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
@@ -20,7 +25,9 @@ import com.lucafaggion.thesis.repository.UserRepository;
 
 @Component
 @Transactional
-public class MessageBroker {
+// @RabbitListener(queues = AMQPServerConfig.USER_SEARCH_QUEUE)
+@RabbitListener(bindings = @QueueBinding(exchange = @Exchange(name = AMQPCommonConfig.USER_EXCHANGE), value = @Queue(value = AMQPServerConfig.USER_SEARCH_QUEUE), key = AMQPCommonConfig.USER_ROUTE_KEY))
+public class UserMessageConsumer {
 
   @Autowired
   UserRepository userRepository;
@@ -28,14 +35,14 @@ public class MessageBroker {
   @Autowired
   UserAssociatedAccountRepository userAssociatedAccountRepository;
 
-  @RabbitListener(queues = AMQPServerConfig.USER_SEARCH_QUEUE)
-  public User searchUser(SearchUserMessage searchUserMessage) {
+  @RabbitHandler
+  public User searchUserByUsernameOnServiceUser(SearchUserByUsernameAndService searchUserMessage) {
     return userRepository.findByUsernameOnService(searchUserMessage.getUsername(), searchUserMessage.getServiceName())
         .orElse(null);
   }
 
-  @RabbitListener(queues = AMQPServerConfig.USER_ASSOCIATED_FROM_USER_ID_SEARCH_QUEUE)
-  public UserAssociatedAccount searchUser(SearchUserAssociatedByUserAndService searchUserAssociatedByUserAndService) {
+  @RabbitHandler
+  public UserAssociatedAccount searchUserAssociatedAccountByUserIdAndServiceName(SearchUserAssociatedByUserAndService searchUserAssociatedByUserAndService) {
     UserAssociatedAccount user = userAssociatedAccountRepository
         .findByUserIdAndServiceName(searchUserAssociatedByUserAndService.getId(),
             searchUserAssociatedByUserAndService.getServiceName())

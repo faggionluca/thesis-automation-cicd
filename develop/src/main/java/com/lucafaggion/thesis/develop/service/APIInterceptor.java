@@ -55,7 +55,8 @@ public class APIInterceptor implements ClientHttpRequestInterceptor {
             .serviceName(service).build();
         Optional<UserAssociatedAccount> userAssociatedAccount = Optional
             .of((UserAssociatedAccount) template.convertSendAndReceive(AMQPCommonConfig.USER_EXCHANGE,
-                AMQPCommonConfig.SEARCH_USER_ASSOCIATED_FROM_USER_ID_ROUTE_KEY,
+                // AMQPCommonConfig.SEARCH_USER_ASSOCIATED_FROM_USER_ID_ROUTE_KEY,
+                AMQPCommonConfig.USER_ROUTE_KEY,
                 search));
         if (userAssociatedAccount.isPresent()) {
           logger.debug("Found Bearer token for {}", authorizeUser);

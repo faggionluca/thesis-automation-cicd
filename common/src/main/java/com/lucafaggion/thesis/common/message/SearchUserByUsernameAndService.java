@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SearchUserMessage {
+public class SearchUserByUsernameAndService {
   @NonNull
   private String username;
   @NonNull

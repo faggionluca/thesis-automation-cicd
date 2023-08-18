@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucafaggion.thesis.common.config.AMQPCommonConfig;
-import com.lucafaggion.thesis.common.message.SearchUserMessage;
+import com.lucafaggion.thesis.common.message.SearchUserByUsernameAndService;
 import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
@@ -56,13 +56,14 @@ public class GitHubWebhookService implements RepoEventWebhookService<RepoPushEve
 
     GitHubPushEvent gitHubPushEvent = mapper.readValue(body, GitHubPushEvent.class);
 
-    SearchUserMessage searchUserMessage = SearchUserMessage.builder()
+    SearchUserByUsernameAndService searchUserMessage = SearchUserByUsernameAndService.builder()
         .username(gitHubPushEvent.getPusher().getName())
         .serviceName(serviceName)
         .build();
 
     User pusher = (User)template.convertSendAndReceive(AMQPCommonConfig.USER_EXCHANGE,
-        AMQPCommonConfig.SEARCH_USER_FROM_ASSOCIATED_ROUTE_KEY,
+        // AMQPCommonConfig.SEARCH_USER_FROM_ASSOCIATED_ROUTE_KEY,
+        AMQPCommonConfig.USER_ROUTE_KEY,
         searchUserMessage);
 
     if(pusher == null){

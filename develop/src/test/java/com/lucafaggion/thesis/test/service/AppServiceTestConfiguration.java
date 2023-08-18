@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -30,13 +31,14 @@ import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 @ComponentScan(basePackages = { "com.lucafaggion.thesis.develop", "com.lucafaggion.thesis.common.config" })
 public class AppServiceTestConfiguration {
 
+  /**
+   * Mock per le Queue di RabbitMQ (org.springframework.amqp)
+   */
   @Configuration
+  @RabbitListener(bindings = @QueueBinding(exchange = @Exchange(name = AMQPCommonConfig.USER_EXCHANGE), value = @Queue, key = AMQPCommonConfig.USER_ROUTE_KEY))
   public class Config {
 
-    /**
-     * Mock per le Queue di RabbitMQ (org.springframework.amqp)
-     */
-    @RabbitListener(bindings = @QueueBinding(exchange = @Exchange(name = AMQPCommonConfig.USER_EXCHANGE), value = @Queue, key = AMQPCommonConfig.SEARCH_USER_ASSOCIATED_FROM_USER_ID_ROUTE_KEY))
+    @RabbitHandler
     public UserAssociatedAccount searchUserAssociatedAccount(
         SearchUserAssociatedByUserAndService searchUserAssociatedByUserAndService) {
       long neverExpire = System.currentTimeMillis() + 3600000;
