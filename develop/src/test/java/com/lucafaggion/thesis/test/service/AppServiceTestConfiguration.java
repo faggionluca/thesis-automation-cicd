@@ -45,8 +45,8 @@ public class AppServiceTestConfiguration {
         return UserAssociatedAccount.builder()
             .username("faggionluca")
             .id(1)
-            .token("ghu_NlKm0QV3HJZcVB9s6Kc6GEDPqT6fHq48Sxe9")
-            .refresh_token("ghu_NlKm0QV3HJZcVB9s6Kc6GEDPqT6fHq48Sxe9")
+            .token("ghu_NlKm0QV3HJZcVB9s6Kc6GEDPqT6fHq48Sxe9") //Fake token
+            .refresh_token("ghu_NlKm0QV3HJZcVB9s6Kc6GEDPqT6fHq48Sxe9") //Fake refresh_token
             .token_valid_until(new Date(neverExpire))
             .refresh_token_valid_until(new Date(neverExpire))
             .build();

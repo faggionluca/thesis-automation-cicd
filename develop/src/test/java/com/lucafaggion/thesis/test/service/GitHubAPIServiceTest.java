@@ -67,4 +67,13 @@ public class GitHubAPIServiceTest extends ServiceFixtures {
     RunnerTaskConfig config = apiService.retriveConfig(event);
     assertNotNull(config, "Config should not be null");
   }
+
+  @Test 
+  void testRetriveConfigWithAuth() throws HttpClientErrorException, IOException {
+    Repo repo = buildRepo(BigInteger.valueOf(1), true, "faggionluca/webhook-events");
+    RepoPushEvent event = buildRepoPushEvent(repo);
+    repo.addEvent(event);
+
+    assertThrows(HttpClientErrorException.Unauthorized.class, () -> apiService.retriveConfig(event));
+  }
 }
