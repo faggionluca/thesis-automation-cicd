@@ -46,12 +46,12 @@ public class UserAssociatedAccountController {
 
   // ----------------------- GITHUB -----------------------------
 
-  @GetMapping("/auth/link/github")
+  @GetMapping("${com.lucafaggion.oauth.config.path_prefix}link/github")
   public ModelAndView addGitHubAccount() {
     return gitHubAssociatedAccountService.redirectToAuthorize();
   }
 
-  @GetMapping("/auth/gh/callback")
+  @GetMapping("${com.lucafaggion.oauth.config.path_prefix}gh/callback")
   @ResponseBody
   public void callbackGitHub(@RequestParam String code, Authentication authentication) {
     logger.debug("GITHUB Code callback is {}", code);
@@ -60,12 +60,12 @@ public class UserAssociatedAccountController {
 
   // ----------------------- BITBUCKET -----------------------------
 
-  @GetMapping("/auth/link/bitbucket")
+  @GetMapping("${com.lucafaggion.oauth.config.path_prefix}link/bitbucket")
   public ModelAndView addBitBucketAccount() {
     return bitBucketAssociatedAccountService.redirectToAuthorize();
   }
 
-  @GetMapping("/auth/bucket/callback")
+  @GetMapping("${com.lucafaggion.oauth.config.path_prefix}bucket/callback")
   @ResponseBody
   public void callbackBitBucket(@RequestParam String code, Authentication authentication) {
     logger.debug("BITBUCKET Code callback is {}", code);

@@ -8,6 +8,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -50,6 +51,12 @@ import com.nimbusds.jose.proc.SecurityContext;
 @EnableWebSecurity
 public class AuthServerConfig {
 
+  @Value("${com.lucafaggion.oauth.config.login.path_prefix}")
+  private String loginFormUrl;
+
+  @Value("${com.lucafaggion.oauth.config.api.path_prefix}")
+  private String authAPIPathPrefix;
+
   @Bean
   public JdbcRegisteredClientRepository registeredClientRepository(JdbcOperations jdbcOperations) {
     // RegisteredClient registeredClient =
@@ -83,7 +90,7 @@ public class AuthServerConfig {
         // authorization endpoint
         .exceptionHandling((exceptions) -> exceptions
             .defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint("/login"),
+                new LoginUrlAuthenticationEntryPoint(loginFormUrl),
                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
     // Accept access tokens for User Info and/or Client Registration
     // .oauth2ResourceServer((resourceServer) -> resourceServer
@@ -96,7 +103,7 @@ public class AuthServerConfig {
   @Order(2) // add a new filter chain specially for resource server endpoints
   public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
     return http
-        .securityMatcher("/auth-api/**")
+        .securityMatcher(authAPIPathPrefix + "**")
         .authorizeHttpRequests(
             authorizeRequests -> authorizeRequests.anyRequest().authenticated())
         .csrf((csrf) -> csrf.disable())

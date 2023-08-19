@@ -3,7 +3,10 @@
 {
   "name": "Develop Java",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/java:1-17-bullseye",
+  // "image": "mcr.microsoft.com/devcontainers/java:1-17-bullseye",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
       "version": "none",
@@ -12,20 +15,21 @@
     },
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
-  "runArgs": [
-    "--network=thesis-network",
-    "--name=developjava",
-    "--env-file", ".devcontainer/develop/.env"
-  ],
+  // "runArgs": [
+  //   "--network=thesis-network",
+  //   "--name=developjava",
+  //   "--env-file=.devcontainer/develop/.env",
+  //   "--label=test-label${env:RUNNER_SERVER_PORT}"
+  // ],
   "customizations": {
     // Configure properties specific to VS Code.
     "vscode": {
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
-		"vscjava.vscode-java-pack",
-		"vscjava.vscode-gradle",
-		"sohibe.java-generate-setters-getters"
-	]
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle",
+        "sohibe.java-generate-setters-getters"
+      ]
     }
   },
   "postCreateCommand": "bash .devcontainer/develop/install-dev-tools.sh && git config --global core.autocrlf input",

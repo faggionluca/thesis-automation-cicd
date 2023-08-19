@@ -1,6 +1,9 @@
 version: '3.7'
 name: thesis-devdb
 services:
+  #######################################
+  #             DATABASE
+  #######################################  
   postdb:
     image: postgres:latest
     restart: always
@@ -11,6 +14,9 @@ services:
       - thesis-network
     volumes: 
       - thesis-devdb:/var/lib/postgresql/data
+  #######################################
+  #          DATABASE TOOl
+  #######################################  
   pgAdmin:
     image: dpage/pgadmin4
     restart: unless-stopped
@@ -23,6 +29,9 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=postgresmaster
     volumes:
       - pgAdminThesis:/var/lib/pgadmin
+  #######################################
+  #          MESSAGE BROKER
+  #######################################  
   rabbitmq:
     restart: unless-stopped
     image: rabbitmq:3-management
@@ -31,6 +40,29 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672" #Non necessaria siccome sono sulla stessa net
+  #######################################
+  #          REVERSE PROXY
+  #######################################  
+  traefik:
+    image: traefik:v2.10.4
+    container_name: traefik_thesis
+    ports:
+      - 8880:80
+      - 8443:443
+      # -- (Optional) Enable Dashboard, don't do in production
+      - 1010:8080
+    volumes:
+      - ./config:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - thesis-network
+    # -- (Optional) When using Cloudflare as Cert Resolver
+    # environment:
+    #   - CF_DNS_API_TOKEN=your-cloudflare-api-token
+    # -- (Optional) When using a custom network
+    # networks:
+    #   - your-traefik-network
+    restart: unless-stopped
 
 networks:
   thesis-network:

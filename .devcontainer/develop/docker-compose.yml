@@ -1,0 +1,32 @@
+networks:
+  thesis-network:
+    external: true
+
+services:
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/java:1-17-bullseye
+    env_file:
+      - ./.env
+    networks:
+      - thesis-network
+    labels:
+      #######################################
+      #           WEBHOOK SERVICE 
+      ####################################### 
+      - traefik.enable=true
+      - traefik.http.routers.develop_webhook.entrypoints=web
+      - traefik.http.routers.develop_webhook.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`${WEBHOOK_SERVICE_PREFIX}`)
+      - traefik.http.routers.develop_webhook.service=thesis_webhook_service
+      - traefik.http.services.thesis_webhook_service.loadbalancer.server.port=${RUNNER_SERVER_PORT}
+
+      #######################################
+      #           AUTH SERVICE 
+      ####################################### 
+      - traefik.http.routers.auth.entrypoints=web
+      - traefik.http.routers.auth.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`${AUTH_SERVICE_PREFIX}`, `${LOGIN_SERVICE_PREFIX}`, `${AUTH_API_PREFIX}`, `/.well-known`, `/oauth2`, `/userinfo`, `/connect`)
+      - traefik.http.routers.auth.service=thesis_auth_service
+      - traefik.http.services.thesis_auth_service.loadbalancer.server.port=${AUTH_SERVER_PORT}
+    volumes:
+      - ../../../:/workspaces:cached      
+    # network_mode: service:db
+    command: sleep infinity
