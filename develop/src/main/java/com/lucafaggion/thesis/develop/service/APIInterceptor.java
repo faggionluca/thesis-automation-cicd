@@ -54,7 +54,7 @@ public class APIInterceptor implements ClientHttpRequestInterceptor {
         SearchUserAssociatedByUserAndService search = SearchUserAssociatedByUserAndService.builder().id(user)
             .serviceName(service).build();
         Optional<UserAssociatedAccount> userAssociatedAccount = Optional
-            .of((UserAssociatedAccount) template.convertSendAndReceive(AMQPCommonConfig.EXTERNAL_SERVICE_EXCHANGE,
+            .ofNullable((UserAssociatedAccount) template.convertSendAndReceive(AMQPCommonConfig.EXTERNAL_SERVICE_EXCHANGE,
                 AMQPCommonConfig.EXTERNAL_SERVICE_ROUTE_KEY,
                 search));
         

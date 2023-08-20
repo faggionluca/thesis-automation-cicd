@@ -13,4 +13,7 @@ public interface UserAssociatedAccountRepository extends JpaRepository<UserAssoc
   
   @Query("SELECT uac FROM User u JOIN u.userAssociatedAccounts uac JOIN uac.service s WHERE u.id = :user_id AND s.name = :serviceName")
   Optional<UserAssociatedAccount> findByUserIdAndServiceName(@Param("user_id") BigInteger user_id, @Param("serviceName") String serviceName);
+
+  @Query("SELECT uac FROM UserAssociatedAccount uac JOIN uac.service s WHERE uac.username = :user_name AND s.name = :serviceName")
+  Optional<UserAssociatedAccount> findByUsernameAndServiceName(@Param("user_name") String user_name, @Param("serviceName") String serviceName);
 }

@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucafaggion.thesis.common.model.User;
+import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 import jakarta.persistence.CascadeType;

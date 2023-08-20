@@ -38,7 +38,7 @@ public class GitHubWebhookService implements RepoEventWebhookService<RepoPushEve
   private ObjectMapper mapper;
 
   @Override
-  public boolean acceptEvent(HttpHeaders headers){
+  public boolean acceptEvent(HttpHeaders headers) {
     return headers.containsKey("x-github-event");
   }
 
@@ -61,14 +61,9 @@ public class GitHubWebhookService implements RepoEventWebhookService<RepoPushEve
         .serviceName(serviceName)
         .build();
 
-    User pusher = (User)template.convertSendAndReceive(AMQPCommonConfig.USER_EXCHANGE,
-        // AMQPCommonConfig.SEARCH_USER_FROM_ASSOCIATED_ROUTE_KEY,
+    Optional<User> pusher = Optional.ofNullable((User) template.convertSendAndReceive(AMQPCommonConfig.USER_EXCHANGE,
         AMQPCommonConfig.USER_ROUTE_KEY,
-        searchUserMessage);
-
-    if(pusher == null){
-      return null;
-    }
+        searchUserMessage));
 
     Repo repo = repoRepository.findByUrl(gitHubPushEvent.getRepository().getClone_url()).orElseThrow();
 
@@ -80,8 +75,11 @@ public class GitHubWebhookService implements RepoEventWebhookService<RepoPushEve
         .created(gitHubPushEvent.isCreated())
         .deleted(gitHubPushEvent.isDeleted())
         .forced(gitHubPushEvent.isForced())
-        .pusher(BigInteger.valueOf(pusher.getId()))
         .build();
+
+    if (pusher.isPresent()) {
+      repoPushEvent.setPusher(BigInteger.valueOf(pusher.get().getId()));
+    }
 
     return repoPushEvent;
   }

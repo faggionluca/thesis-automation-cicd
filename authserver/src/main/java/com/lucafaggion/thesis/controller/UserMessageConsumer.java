@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lucafaggion.thesis.common.config.AMQPCommonConfig;
 import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUserAndService;
+import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUsernameAndService;
 import com.lucafaggion.thesis.common.message.SearchUserByUsernameAndService;
 import com.lucafaggion.thesis.common.model.ExternalService;
 import com.lucafaggion.thesis.common.model.User;
@@ -36,15 +37,21 @@ public class UserMessageConsumer {
   UserAssociatedAccountRepository userAssociatedAccountRepository;
 
   @RabbitHandler
-  public User searchUserByUsernameOnServiceUser(SearchUserByUsernameAndService request) {
+  public User searchUserBy(SearchUserByUsernameAndService request) {
     return userRepository.findByUsernameOnService(request.getUsername(), request.getServiceName()).orElse(null);
   }
 
   @RabbitHandler
-  public UserAssociatedAccount searchUserAssociatedAccountByUserIdAndServiceName(
+  public UserAssociatedAccount searchUserAssociatedBy(
       SearchUserAssociatedByUserAndService request) {
     UserAssociatedAccount user = userAssociatedAccountRepository
         .findByUserIdAndServiceName(request.getId(), request.getServiceName()).orElse(null);
     return user;
+  }
+
+  @RabbitHandler
+  public UserAssociatedAccount searchUserAssociatedBy(SearchUserAssociatedByUsernameAndService request) {
+    return userAssociatedAccountRepository.findByUsernameAndServiceName(request.getUsername(),
+        request.getServiceName()).orElse(null);
   }
 }

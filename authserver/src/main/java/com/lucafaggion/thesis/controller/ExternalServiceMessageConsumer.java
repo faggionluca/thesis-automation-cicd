@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.lucafaggion.thesis.common.config.AMQPCommonConfig;
 import com.lucafaggion.thesis.common.message.RefreshTokenForUserAssociatedOnService;
 import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUserAndService;
+import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUsernameAndService;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 import com.lucafaggion.thesis.config.AMQPServerConfig;
 import com.lucafaggion.thesis.repository.UserAssociatedAccountRepository;
@@ -36,14 +37,14 @@ public class ExternalServiceMessageConsumer {
   UserAssociatedAccountRepository userAssociatedAccountRepository;
 
   @RabbitHandler
-  public UserAssociatedAccount refreshTokenForUserAssociatedOnService(RefreshTokenForUserAssociatedOnService request) {
+  public UserAssociatedAccount refreshTokenFor(RefreshTokenForUserAssociatedOnService request) {
     UserAssociatedAccountService service = userAssociatedAccountServices.stream()
     .filter(currservice -> currservice.forService(request.getServiceName())).findFirst().orElseThrow();
     return service.refreshTokenFor(request.getUserAssociatedAccount());
   }
   
   @RabbitHandler
-  public UserAssociatedAccount refreshTokenForUserAssociatedOnService(SearchUserAssociatedByUserAndService request) {
+  public UserAssociatedAccount refreshTokenFor(SearchUserAssociatedByUserAndService request) {
     Optional<UserAssociatedAccount> user = userAssociatedAccountRepository
     .findByUserIdAndServiceName(request.getId(), request.getServiceName());
     if (user.isPresent()) {
