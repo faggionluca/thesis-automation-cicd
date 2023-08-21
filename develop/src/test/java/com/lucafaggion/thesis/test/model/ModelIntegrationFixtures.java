@@ -5,6 +5,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 
+import com.lucafaggion.thesis.test.UnitTestFixtures;
+
 @Import(AppIntegrationTestConfiguration.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -12,6 +14,6 @@ import org.springframework.test.context.TestPropertySource;
     "spring.datasource.url= jdbc:postgresql://postdb:5432/testrundb",
     "spring.jpa.hibernate.ddl-auto=create-drop"
 })
-public class ModelIntegrationFixtures extends ModelFixtures {
+public class ModelIntegrationFixtures extends UnitTestFixtures {
 
 }

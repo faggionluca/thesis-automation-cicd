@@ -15,6 +15,7 @@ import org.springframework.test.annotation.Commit;
 
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.repository.RunnerJobRepository;
+import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 public class RunnerJobIntergrationTest extends ModelIntegrationFixtures {
   
@@ -26,8 +27,8 @@ public class RunnerJobIntergrationTest extends ModelIntegrationFixtures {
 
   @BeforeEach
   void setUp() throws IOException {
-    this.config = ModelFixtures.loadConfig("runnerJobOnlySteps");
-    RunnerJob runnerJobTmp = ModelFixtures.mapper.readValue(config, RunnerJob.class);
+    this.config = UnitTestFixtures.loadConfig("runnerJobOnlySteps");
+    RunnerJob runnerJobTmp = UnitTestFixtures.mapper.readValue(config, RunnerJob.class);
     this.runnerJob = runnerJobRepository.save(runnerJobTmp);
   }
 

@@ -1,4 +1,4 @@
-package com.lucafaggion.thesis.test.model;
+package com.lucafaggion.thesis.test;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,10 +20,10 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
  * Classe base per gli Unit Test
  * Implemente metodi e annotation per ridurre la Code Duplication
  */
-public class ModelFixtures {
-  static String testDirectory = "src/test/resources/config/";
-  static HashMap<String, String> configs = new HashMap<String,String>() {{}};
-  static ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+public class UnitTestFixtures {
+  public static String testDirectory = "src/test/resources/config/";
+  public static HashMap<String, String> configs = new HashMap<String,String>() {{}};
+  public static ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
   @BeforeAll
   static void setUpMapper() {
@@ -36,7 +36,7 @@ public class ModelFixtures {
    * @throws IOException
    */
   @BeforeAll
-  static void loadConfigs() throws IOException {
+  public static void loadConfigs() throws IOException {
     try (Stream<Path> stream = Files.list(Paths.get(testDirectory))) {
       stream
           .filter(file -> !Files.isDirectory(file))
@@ -50,7 +50,7 @@ public class ModelFixtures {
    * @return il contenuto del file
    * @throws IOException
    */
-  static String loadConfig(String name) throws IOException {
+  public static String loadConfig(String name) throws IOException {
     String fileName = configs.get(name + ".yaml");
     File configFile = new File(fileName);
     return Files.readAllLines(configFile.toPath()).stream().collect(Collectors.joining(System.lineSeparator()));

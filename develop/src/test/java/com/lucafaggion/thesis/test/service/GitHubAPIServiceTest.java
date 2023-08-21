@@ -19,7 +19,7 @@ import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.service.GitHub.GitHubAPIService;
 import com.lucafaggion.thesis.develop.service.exceptions.ConfigurationNotFoundException;
 
-public class GitHubAPIServiceTest extends ServiceFixtures {
+public class GitHubAPIServiceTest extends ServiceIntegrationFixtures {
 
   @Autowired
   GitHubAPIService apiService;

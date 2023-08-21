@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
+import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
 import com.lucafaggion.thesis.develop.service.ContextService;
 import com.lucafaggion.thesis.develop.service.WebhookService;
 import com.lucafaggion.thesis.develop.service.GitHub.GitHubAPIService;
@@ -29,6 +30,9 @@ public class WebhooksController {
   RepoEventRepository repoEventRepository;
 
   @Autowired
+  RunnerTaskConfigRepository runnerTaskConfigRepository;
+
+  @Autowired
   WebhookService webhookService;
 
   @Autowired
@@ -40,14 +44,20 @@ public class WebhooksController {
   @PostMapping("/webhook/event/push")
   ResponseEntity<HttpStatus> ReceiveGeneralPushEvent(@RequestHeader HttpHeaders headers, @RequestBody String body)
       throws JsonMappingException, JsonProcessingException {
+    // Deserializziamo l'evento
     logger.debug("Received /webhook/event/push with HEADERS: {}, BODY: {}", headers, body);
     RepoPushEvent repoPushEvent = repoEventRepository.save(webhookService.deserializeToPushEvent(headers, body));
     contextService.getContext().setVariable("event", repoPushEvent);
     logger.debug("Successfully deserialized /webhook/event/push RESULT: {}", repoPushEvent);
+
+    // Recuperiamo la config per l'evento
     try {
       RunnerTaskConfig config = gitHubAPIService.retriveConfig(repoPushEvent);
-      logger.debug("Context holds : {}", contextService.getContext().getVariableNames());
+      runnerTaskConfigRepository.save(config);
+      logger.debug("Successfully retrived RunnerTaskConfig with value: {}", config);
+      logger.debug("RunnerContext holds : {}", contextService.getContext().getVariableNames());
     } catch (Exception e) {
+      logger.error("Exception while retriving config, Type: {}", e.getClass());
       repoPushEvent.setStatus(ExceptionStatusUtils.fromThrowable(e));
       repoEventRepository.save(repoPushEvent);
     }

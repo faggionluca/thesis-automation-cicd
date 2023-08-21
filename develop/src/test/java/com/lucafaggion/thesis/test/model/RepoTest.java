@@ -7,8 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 
 import com.lucafaggion.thesis.develop.model.Repo;
 import com.lucafaggion.thesis.develop.model.RepoEvent;
+import com.lucafaggion.thesis.test.UnitTestFixtures;
 
-public class RepoTest extends ModelFixtures {
+public class RepoTest extends UnitTestFixtures {
 
   protected Repo repo;
 

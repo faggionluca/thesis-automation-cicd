@@ -14,6 +14,7 @@ import org.springframework.test.annotation.Commit;
 
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.repository.RunnerTaskConfigRepository;
+import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 public class RunnerTaskConfigIntegrationTest extends ModelIntegrationFixtures {
 
@@ -41,9 +42,9 @@ public class RunnerTaskConfigIntegrationTest extends ModelIntegrationFixtures {
   @Commit // decommentare per debuggare i cambiamenti nel db
   void runnerTaskConfigSaveFull() throws IOException {
     // Carichiamo la config e deserializziamo
-    String config = ModelFixtures.loadConfig("runnerTaskConfig");
+    String config = UnitTestFixtures.loadConfig("runnerTaskConfig");
     // RunnerTaskConfig runnerTaskConfig = RunnerTaskConfig.builder().build();
-    RunnerTaskConfig runnerTaskConfig = ModelFixtures.mapper.readValue(config, RunnerTaskConfig.class);
+    RunnerTaskConfig runnerTaskConfig = UnitTestFixtures.mapper.readValue(config, RunnerTaskConfig.class);
 
     // Save
     runnerTaskConfigRepository.save(runnerTaskConfig);

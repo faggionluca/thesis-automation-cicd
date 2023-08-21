@@ -11,18 +11,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.lucafaggion.thesis.develop.model.RunnerJob;
+import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 // Unit Tests per il POJO RunnerJobTest
 
-public class RunnerJobTest extends ModelFixtures {
+public class RunnerJobTest extends UnitTestFixtures {
 
   String config;
   RunnerJob runnerJobOnlySteps;
 
   @BeforeEach
   void SetUp() throws IOException {
-    this.config = ModelFixtures.loadConfig("runnerJobOnlySteps");
-    this.runnerJobOnlySteps = ModelFixtures.mapper.readValue(config, RunnerJob.class);
+    this.config = UnitTestFixtures.loadConfig("runnerJobOnlySteps");
+    this.runnerJobOnlySteps = UnitTestFixtures.mapper.readValue(config, RunnerJob.class);
   }
 
   @Test
@@ -38,8 +39,8 @@ public class RunnerJobTest extends ModelFixtures {
   @Test
   void runnerJobDeserializeAndSerialize() throws IOException {
     // Testiamo la serializzazione e deserializzazione
-    String serializedrunnerJobOnlySteps = ModelFixtures.mapper.writeValueAsString(this.runnerJobOnlySteps);
-    RunnerJob runnerJobOnlyStepsLoaded = ModelFixtures.mapper.readValue(serializedrunnerJobOnlySteps, RunnerJob.class);
+    String serializedrunnerJobOnlySteps = UnitTestFixtures.mapper.writeValueAsString(this.runnerJobOnlySteps);
+    RunnerJob runnerJobOnlyStepsLoaded = UnitTestFixtures.mapper.readValue(serializedrunnerJobOnlySteps, RunnerJob.class);
 
     assertNotNull(runnerJobOnlyStepsLoaded, "Deserialized object must not be null");
     assertNotNull(runnerJobOnlyStepsLoaded.getSteps(), "getSteps must not be null");

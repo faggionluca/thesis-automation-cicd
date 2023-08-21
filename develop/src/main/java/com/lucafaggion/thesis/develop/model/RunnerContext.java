@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -124,6 +125,10 @@ public class RunnerContext implements IContext {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.activateDefaultTyping(new LaissezFaireSubTypeValidator(), ObjectMapper.DefaultTyping.EVERYTHING, As.PROPERTY);
     return objectMapper.readValue(objectMapper.writeValueAsString(this), RunnerContext.class);
+  }
+
+  public Context toThymeleafContext() {
+    return new Context(this.locale, this.variables);
   }
 
 }

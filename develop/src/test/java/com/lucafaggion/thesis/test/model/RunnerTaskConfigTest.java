@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
+import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 public class RunnerTaskConfigTest extends RepoTest {
 
@@ -18,9 +19,9 @@ public class RunnerTaskConfigTest extends RepoTest {
   @BeforeEach
   void setUpRunnerTaskConfig() throws IOException {
     // Carichiamo la config
-    String config = ModelFixtures.loadConfig("runnerTaskConfig");
+    String config = UnitTestFixtures.loadConfig("runnerTaskConfig");
     // Testiamo la deserializzazione
-    runnerTaskConfig = ModelFixtures.mapper.readValue(config, RunnerTaskConfig.class);
+    runnerTaskConfig = UnitTestFixtures.mapper.readValue(config, RunnerTaskConfig.class);
   }
 
   @Test
