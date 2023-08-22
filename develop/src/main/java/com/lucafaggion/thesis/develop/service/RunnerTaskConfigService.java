@@ -52,7 +52,7 @@ public class RunnerTaskConfigService {
     for (Entry<String, RunnerJob> jobEntry : runnerTaskConfig.getJobs().entrySet()) {
       jobEntry.getValue().setName(jobEntry.getKey()); // Set the name of the job
     }
-    return mapper.readValue(new String(config), RunnerTaskConfig.class);
+    return runnerTaskConfig;
     // compileTemplate(config, contextService.getContext().toThymeleafContext())
   }
 
