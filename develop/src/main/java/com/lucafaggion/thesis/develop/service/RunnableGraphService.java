@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -17,9 +18,10 @@ import org.jgrapht.Graph;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,6 +43,8 @@ import com.mxgraph.util.mxCellRenderer;
 @Service
 @Scope("prototype")
 public class RunnableGraphService {
+
+  private final static Logger logger = LoggerFactory.getLogger(RunnableGraphService.class);
 
   @Autowired
   ContainerActionsService containerActionsService;
@@ -84,12 +88,55 @@ public class RunnableGraphService {
     return future_g;
   }
 
-  public void executeGraph(Graph<RunnerAction, RunnableGraphEdge> graph, ThreadPoolTaskExecutor taskExecutor)
+  private void addDebugCallbackForAction(RunnerAction action, Executor executor) {
+    if (!logger.isDebugEnabled()) {
+      return;
+    }
+    Futures.addCallback(action.getListenableFuture(), new FutureCallback<Object>() {
+      @Override
+      public void onSuccess(Object result) {
+        // TODO: set complete on jobs
+        logger.debug("[SUCCESS] finished executing RunnerAction name: {}", action.getJob().getName());
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        // TODO: set error on jobs
+        logger.debug("[ERROR] on RunnerAction name: {}", action.getJob().getName());
+      }
+    }, executor);
+  }
+
+  private void addDebugCallbackToLeafNode(RunnerAction current, ListenableFuture<List<String>> future,
+      Executor executor) {
+    if (!logger.isDebugEnabled()) {
+      return;
+    }
+    Futures.addCallback(future, new FutureCallback<Object>() {
+      @Override
+      public void onSuccess(Object result) {
+        // TODO: set complete on jobs
+        logger.debug("[SUCCESS] result {}, before leaf node {}", result,
+            current.getJob().getName());
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        // TODO: set error on jobs
+        logger.debug("[ERROR] on tasks before leaf node {}", current.getJob().getName());
+      }
+    }, executor);
+  }
+
+  public void executeGraph(Graph<RunnerAction, RunnableGraphEdge> graph, ExecutorService executorService)
       throws InterruptedException, ExecutionException {
+    ListeningExecutorService service = MoreExecutors.listeningDecorator(executorService);
+    // Aggiungi i callback per ogni runnertask
+    graph.vertexSet().forEach(action -> addDebugCallbackForAction(action, service));
+
     List<ListenableFuture<?>> waitForAll = new ArrayList<>();
 
     // TODO: check executors ThreadPoolTaskExecutor
-    ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20));
     TopologicalOrderIterator<RunnerAction, RunnableGraphEdge> iterator = new TopologicalOrderIterator<RunnerAction, RunnableGraphEdge>(
         graph);
     while (iterator.hasNext()) {
@@ -101,7 +148,6 @@ public class RunnableGraphService {
       if (incomingEdges.isEmpty()) {
         // questo nodo non dipende da nessun altro sono quindi nodi ROOT
         // ma altri nodi potrebbero dipendere da questo nodo
-
         waitForAll.add(service.submit(currentFuture));
       } else if (outgoingEdges.isEmpty()) {
 
@@ -109,34 +155,17 @@ public class RunnableGraphService {
         // questo nodo
         // ma questo nodo dipende da altri nodi
 
-        ListenableFutureTask<Object> node = ListenableFutureTask.create(() -> {
+        ListenableFutureTask<Object> leaf = ListenableFutureTask.create(() -> {
           ListenableFuture<List<String>> previusFutures = Futures
               .allAsList(incomingEdges.stream().map(edge -> edge.getSourceAction().getListenableFuture()).toList());
-
-          // semplice callback di debug non è funzionale come quello sotto
-          Futures.addCallback(previusFutures, new FutureCallback<List<String>>() {
-            @Override
-            public void onSuccess(List<String> configResults) {
-              // TODO: set complete on jobs
-              System.out.println(String.format("[SUCCESS] result %s, starting task %s", configResults.toString(),
-                  current.getJob().getName()));
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-              // TODO: set error on jobs
-              System.out.println(String.format("[ERROR] on one of tasks before %s", current.getJob().getName()));
-            }
-          }, taskExecutor);
-
-          System.out.println(previusFutures.get());
-
+          addDebugCallbackToLeafNode(current, previusFutures, service);
+          previusFutures.get();
           // TODO: merge the context
           ListenableFuture<?> leafTask = service.submit(currentFuture);
           leafTask.get();
           return null;
         });
-        waitForAll.add(service.submit(node));
+        waitForAll.add(service.submit(leaf));
       } else {
 
         // qui siamo in un nodo dipendente sia da altri nodi sia esistono nodi
@@ -147,19 +176,17 @@ public class RunnableGraphService {
         Futures.addCallback(previusFutures, new FutureCallback<List<String>>() {
           @Override
           public void onSuccess(List<String> configResults) {
-            // TODO: set complete on jobs
-            System.out.println(String.format("[SUCCESS] result %s, starting task %s", configResults.toString(),
-                current.getJob().getName()));
+            logger.debug("[SUCCESS] result {}, starting task {}", configResults.toString(),
+                current.getJob().getName());
             // TODO: merge the context
             waitForAll.add(service.submit(currentFuture));
           }
 
           @Override
           public void onFailure(Throwable t) {
-            // TODO: set error on job
-            System.out.println(String.format("[ERROR] on one of tasks before %s", current.getJob().getName()));
+            logger.debug("[ERROR] on one of tasks before {}", current.getJob().getName());
           }
-        }, taskExecutor);
+        }, service);
         waitForAll.add(previusFutures);
       }
     }
@@ -167,6 +194,9 @@ public class RunnableGraphService {
     listFuture.get();
   }
 
+  /*
+   * Crea l'immagine di un qualsiasi grafico
+   */
   public <T, E> void saveGraphToImage(Graph<T, E> graph, String location) throws IOException {
     JGraphXAdapter<T, E> graphAdapter = new JGraphXAdapter<T, E>(graph);
     graphAdapter.getEdgeToCellMap().forEach((edge, cell) -> cell.setValue(null));

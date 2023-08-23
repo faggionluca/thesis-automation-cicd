@@ -2,6 +2,9 @@ package com.lucafaggion.thesis.develop.model;
 
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.lucafaggion.thesis.develop.service.ContainerActionsService;
 
@@ -18,6 +21,8 @@ import lombok.ToString;
 @Builder
 public class RunnerAction implements Callable<String> {
 
+  private final static Logger logger = LoggerFactory.getLogger(RunnerAction.class);
+
   @NonNull
   ContainerActionsService containerActionsService;
   
@@ -33,6 +38,7 @@ public class RunnerAction implements Callable<String> {
 
   @Override
   public String call() throws Exception {
+    logger.debug("Executing RunnerAction with RunnerJob name: {}", job.getName());
     return containerActionsService.runActionInContainer(this);
   }
   

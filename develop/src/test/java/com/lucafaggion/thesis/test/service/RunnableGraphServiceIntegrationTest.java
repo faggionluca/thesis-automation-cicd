@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.jgrapht.Graph;
@@ -52,8 +54,7 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
   @Autowired
   ContextService contextService;
 
-  @Autowired
-  ThreadPoolTaskExecutor taskExecutor;
+  protected ExecutorService taskExecutor;
 
   @MockBean
   ContainerActionsService containerActionsService;
@@ -71,6 +72,7 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
       public final String name = "Luca";
       public final String username = "faggionluca";
     });
+    taskExecutor = Executors.newFixedThreadPool(20);
   }
 
   @Test
@@ -106,11 +108,8 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
       public String answer(InvocationOnMock invocation) throws InterruptedException {
         RunnerAction runnerAction = (RunnerAction) invocation.getArgument(0);
         executionResult.add(runnerAction.getJob().getName());
-        System.out.println(String.format("Executing Task [%s]", runnerAction.getJob().getName()));
         waitRandomBetween(2000, 3000);
-        // if (job.getName().equals("Dependent-Task1")) {
-        // throw new NoSuchElementException("error on task " + job.getName());
-        // }
+        System.out.println("finished runActionInContainer of " + runnerAction.getJob().getName());
         return "ok";
       }
     });
@@ -135,12 +134,13 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
       public String answer(InvocationOnMock invocation) throws InterruptedException {
         RunnerAction runnerAction = (RunnerAction) invocation.getArgument(0);
         // executionResult.add(runnerAction.getJob().getName());
-        System.out.println(String.format("Executing Task [%s]", runnerAction.getJob().getName()));
         waitRandomBetween(2000, 3000);
         // solo questa runner action fallira!
         if (runnerAction.getJob().getName().equals("Dependent-Task3")) {
+          System.out.println("trhowing ERROR on runActionInContainer of " + runnerAction.getJob().getName());
           throw new NoSuchElementException("error on task " + runnerAction.getJob().getName());
         }
+        System.out.println("finished runActionInContainer of " + runnerAction.getJob().getName());
         return "ok";
       }
     });
