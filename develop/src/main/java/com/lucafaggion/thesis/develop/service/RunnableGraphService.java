@@ -87,7 +87,7 @@ public class RunnableGraphService {
   public void executeGraph(Graph<RunnerAction, RunnableGraphEdge> graph, ThreadPoolTaskExecutor taskExecutor)
       throws InterruptedException, ExecutionException {
     List<ListenableFuture<?>> waitForAll = new ArrayList<>();
-    
+
     // TODO: check executors ThreadPoolTaskExecutor
     ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20));
     TopologicalOrderIterator<RunnerAction, RunnableGraphEdge> iterator = new TopologicalOrderIterator<RunnerAction, RunnableGraphEdge>(
@@ -97,14 +97,40 @@ public class RunnableGraphService {
       ListenableFutureTask<String> currentFuture = current.getListenableFuture();
       Set<RunnableGraphEdge> incomingEdges = graph.incomingEdgesOf(current);
       Set<RunnableGraphEdge> outgoingEdges = graph.outgoingEdgesOf(current);
+
       if (incomingEdges.isEmpty()) {
-        // waitForAll.add((Future<String>) taskExecutor.submit(current.getListenableFuture()));
+        // questo nodo non dipende da nessun altro sono quindi nodi ROOT
+        // ma altri nodi potrebbero dipendere da questo nodo
+
         waitForAll.add(service.submit(currentFuture));
       } else if (outgoingEdges.isEmpty()) {
+
+        // qui siamo in un nodo finale (LEAF) ovver non abbiamo nodi che dipendono da
+        // questo nodo
+        // ma questo nodo dipende da altri nodi
+
         ListenableFutureTask<Object> node = ListenableFutureTask.create(() -> {
           ListenableFuture<List<String>> previusFutures = Futures
               .allAsList(incomingEdges.stream().map(edge -> edge.getSourceAction().getListenableFuture()).toList());
+
+          // semplice callback di debug non è funzionale come quello sotto
+          Futures.addCallback(previusFutures, new FutureCallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> configResults) {
+              // TODO: set complete on jobs
+              System.out.println(String.format("[SUCCESS] result %s, starting task %s", configResults.toString(),
+                  current.getJob().getName()));
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+              // TODO: set error on jobs
+              System.out.println(String.format("[ERROR] on one of tasks before %s", current.getJob().getName()));
+            }
+          }, taskExecutor);
+
           System.out.println(previusFutures.get());
+
           // TODO: merge the context
           ListenableFuture<?> leafTask = service.submit(currentFuture);
           leafTask.get();
@@ -112,19 +138,26 @@ public class RunnableGraphService {
         });
         waitForAll.add(service.submit(node));
       } else {
+
+        // qui siamo in un nodo dipendente sia da altri nodi sia esistono nodi
+        // dipendenti da questo nodo
+
         ListenableFuture<List<String>> previusFutures = Futures
             .allAsList(incomingEdges.stream().map(edge -> edge.getSourceAction().getListenableFuture()).toList());
         Futures.addCallback(previusFutures, new FutureCallback<List<String>>() {
           @Override
           public void onSuccess(List<String> configResults) {
-            System.out.println(configResults.toString());
+            // TODO: set complete on jobs
+            System.out.println(String.format("[SUCCESS] result %s, starting task %s", configResults.toString(),
+                current.getJob().getName()));
             // TODO: merge the context
             waitForAll.add(service.submit(currentFuture));
           }
 
           @Override
           public void onFailure(Throwable t) {
-            System.out.println("ERROR ON TASK");
+            // TODO: set error on job
+            System.out.println(String.format("[ERROR] on one of tasks before %s", current.getJob().getName()));
           }
         }, taskExecutor);
         waitForAll.add(previusFutures);

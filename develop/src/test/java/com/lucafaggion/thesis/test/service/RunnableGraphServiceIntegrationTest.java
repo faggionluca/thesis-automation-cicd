@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +97,8 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
       throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
     List<String> executionExpectedResult = List.of("Explore-GitHub-Actions", "Dependent-Task1", "Dependent-Task2",
         "Dependent-Task3", "Final-task");
-        List<String> executionExpectedResult_variant = List.of("Explore-GitHub-Actions", "Dependent-Task1", "Dependent-Task3",
+    List<String> executionExpectedResult_variant = List.of("Explore-GitHub-Actions", "Dependent-Task1",
+        "Dependent-Task3",
         "Dependent-Task2", "Final-task");
     List<String> executionResult = new LinkedList<>();
     Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<String>() {
@@ -112,13 +114,43 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
         return "ok";
       }
     });
+
+    System.out.println("Creating and executing the graph....");
     Graph<RunnerAction, RunnableGraphEdge> graph = runnableGraphService.createAcyclicGraphFromConfig(runnerTaskConfig,
         contextService.getContext());
     runnableGraphService.executeGraph(graph, taskExecutor);
 
     System.out.println("Finished Executing graph");
     System.out.println(executionResult);
-    assertTrue(executionExpectedResult.equals(executionResult) || executionExpectedResult_variant.equals(executionResult), "Execution should be orderer correctly");
+    assertTrue(
+        executionExpectedResult.equals(executionResult) || executionExpectedResult_variant.equals(executionResult),
+        "Execution should be orderer correctly");
+  }
+
+  @Test
+  void shouldCorrectlyExecuteTheGraphWithErrors()
+      throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
+    Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<String>() {
+      @Override
+      public String answer(InvocationOnMock invocation) throws InterruptedException {
+        RunnerAction runnerAction = (RunnerAction) invocation.getArgument(0);
+        // executionResult.add(runnerAction.getJob().getName());
+        System.out.println(String.format("Executing Task [%s]", runnerAction.getJob().getName()));
+        waitRandomBetween(2000, 3000);
+        // solo questa runner action fallira!
+        if (runnerAction.getJob().getName().equals("Dependent-Task3")) {
+          throw new NoSuchElementException("error on task " + runnerAction.getJob().getName());
+        }
+        return "ok";
+      }
+    });
+    System.out.println("Creating and executing the graph....");
+    Graph<RunnerAction, RunnableGraphEdge> graph = runnableGraphService.createAcyclicGraphFromConfig(runnerTaskConfig,
+        contextService.getContext());
+    runnableGraphService.executeGraph(graph, taskExecutor);
+
+    System.out.println("Finished Executing graph");
+    // System.out.println(executionResult);
   }
 
   @Test
