@@ -1,26 +1,21 @@
 package com.lucafaggion.thesis.develop.model;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.SerializationUtils;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /**
@@ -39,12 +34,10 @@ public class RunnerContext implements IContext {
 
   public RunnerContext(final Locale locale, final Map<String, Object> variables) {
     super();
-    this.locale =
-            (locale == null? Locale.getDefault() : locale);
-    this.variables =
-            (variables == null?
-                    new LinkedHashMap<String, Object>(10) :
-                    new LinkedHashMap<String, Object>(variables));
+    this.locale = (locale == null ? Locale.getDefault() : locale);
+    this.variables = (variables == null ? new LinkedHashMap<String, Object>(10)
+        : new LinkedHashMap<String, Object>(variables));
+
   }
 
   @Override
@@ -122,13 +115,25 @@ public class RunnerContext implements IContext {
   }
 
   public RunnerContext copy() throws JsonMappingException, JsonProcessingException {
+    // configura ObjectMapper per serializzazione e deserializzazione
     ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.activateDefaultTyping(new LaissezFaireSubTypeValidator(), ObjectMapper.DefaultTyping.EVERYTHING, As.PROPERTY);
+    objectMapper.activateDefaultTyping(new LaissezFaireSubTypeValidator(), ObjectMapper.DefaultTyping.EVERYTHING,
+        As.PROPERTY);
     return objectMapper.readValue(objectMapper.writeValueAsString(this), RunnerContext.class);
   }
 
   public Context toThymeleafContext() {
     return new Context(this.locale, this.variables);
+  }
+
+  @Override
+  public String toString() {
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      return objectMapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      return "";
+    }
   }
 
 }

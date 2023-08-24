@@ -1,0 +1,19 @@
+{
+  "Name": "[${job.name}]",
+  "TaskTemplate": {
+    "ContainerSpec": {
+      "Image": "[${job.image}]",
+      "TTY": true,
+      "OpenStdin": true
+    },
+    "RestartPolicy": {
+      "Condition": "none",
+      "MaxAttempts": 0
+    }
+  },
+  "Mode": {
+    "Replicated": {
+      "Replicas": 1
+    }
+  }
+}

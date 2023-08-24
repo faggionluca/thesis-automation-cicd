@@ -1,7 +1,8 @@
 package com.lucafaggion.thesis.develop.service;
 
 import com.lucafaggion.thesis.develop.model.RunnerAction;
+import com.lucafaggion.thesis.develop.model.RunnerContext;
 
 public interface ContainerActionsService {
-  public String runActionInContainer(RunnerAction action);
+  public RunnerContext runActionInContainer(RunnerAction action);
 }

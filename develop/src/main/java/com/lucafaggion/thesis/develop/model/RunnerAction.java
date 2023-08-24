@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 @Setter(AccessLevel.NONE)
 @Builder
-public class RunnerAction implements Callable<String> {
+public class RunnerAction implements Callable<RunnerContext> {
 
   private final static Logger logger = LoggerFactory.getLogger(RunnerAction.class);
 
@@ -30,19 +30,19 @@ public class RunnerAction implements Callable<String> {
   private RunnerJob job;
 
   @ToString.Exclude
-  private ListenableFutureTask<String> listenableFuture;
+  private ListenableFutureTask<RunnerContext> listenableFuture;
   
   @NonNull
   @ToString.Exclude
   private RunnerContext context;
 
   @Override
-  public String call() throws Exception {
+  public RunnerContext call() throws Exception {
     logger.debug("Executing RunnerAction with RunnerJob name: {}", job.getName());
     return containerActionsService.runActionInContainer(this);
   }
   
-  public ListenableFutureTask<String> getListenableFuture() {
+  public ListenableFutureTask<RunnerContext> getListenableFuture() {
     if (this.listenableFuture != null)
       return this.listenableFuture;
     this.listenableFuture = ListenableFutureTask.create(this);

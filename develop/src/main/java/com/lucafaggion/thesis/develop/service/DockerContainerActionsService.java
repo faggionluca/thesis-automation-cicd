@@ -2,16 +2,18 @@ package com.lucafaggion.thesis.develop.service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -35,15 +37,31 @@ import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.WaitStrategies;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
+import com.lucafaggion.thesis.develop.model.RunnerContext;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerJobStep;
 
 @Service
 public class DockerContainerActionsService implements ContainerActionsService {
 
+  // @Value("classpath:templates/default_docker_service.config.json")
+  // Resource serviceConfigTemplate;
+  @Autowired
+  ResourceLoader resourceLoader;
+
+  private final static Logger logger = LoggerFactory.getLogger(DockerContainerActionsService.class);
+
+  @Autowired
+  RunnerTaskConfigService runnerTaskConfigService;
+
   @Autowired
   ContainerService<DockerClient, DockerHttpClient> docker;
+
+  @Autowired
+  ObjectMapper mapper;
 
   private void execJobTask(String containerId, RunnerJobStep runnerJobStep) {
     // TODO: implement
@@ -53,9 +71,107 @@ public class DockerContainerActionsService implements ContainerActionsService {
     // TODO: implement
   }
 
-
   @Override
-  public String runActionInContainer(RunnerAction action) {
+  public RunnerContext runActionInContainer(RunnerAction action) {
+
+    return null;
+  }
+
+  public void shutDownService(String serviceId) {
+    DockerClient client = docker.client();
+    logger.debug("Removing Docker service with ID: {}", serviceId);
+    client.removeServiceCmd(serviceId).exec();
+  }
+
+  public String createService(RunnerAction action) throws IOException {
+    DockerClient client = docker.client();
+    DockerHttpClient httpClient = docker.http();
+
+    // ---- AGGIORNIAMO IL CONTEXT DELL'ACTION --------------------------
+    action.getContext().setVariable("job", action.getJob());
+    
+    // ---- COMPILIAMO IL TEMPLATE DEL DOCKER SERVICE --------------------------
+    Resource serviceConfigTemplate = resourceLoader
+        .getResource("classpath:templates/default_docker_service.config.json");
+    String serviceConfig = new String(Files.readAllBytes(serviceConfigTemplate.getFile().toPath()));
+    logger.debug("Loaded Docker service config template from {} with value: {}", serviceConfigTemplate.getFile().toPath(), serviceConfig);
+
+    // ---- CREA IL DOCKER SERVICE --------------------------
+    String compiledConfig = runnerTaskConfigService.compile(serviceConfig, action.getContext().toThymeleafContext());
+    logger.debug("Compiled Docker service config template: {}", compiledConfig);
+    ServiceSpec spec = mapper.readValue(compiledConfig, ServiceSpec.class);
+    CreateServiceResponse serviceResponse = client.createServiceCmd(spec).exec();
+
+    return serviceResponse.getId();
+  }
+
+  /*
+   * Crea un Docker Swarm service task container
+   */
+  public TaskStatusContainerStatus retriveContainerOfService(RunnerAction action, String serviceId) throws ExecutionException, RetryException, IOException {
+      
+    DockerClient client = docker.client();
+    DockerHttpClient httpClient = docker.http();
+
+    // ---- RECUPERA LA SINGOLA TASK DEL DOCKER SERVICE --------------------------
+    Callable<List<Task>> taskStatusCallable = new Callable<List<Task>>() {
+      public List<Task> call() throws Exception {
+        return client.listTasksCmd().withServiceFilter(serviceId).exec();
+      }
+    };
+
+    Retryer<List<Task>> taskStatusRetryer = RetryerBuilder.<List<Task>>newBuilder()
+        .retryIfResult(Predicates.<List<Task>>isNull())
+        .retryIfResult(new Predicate<List<Task>>() {
+          @Override
+          public boolean apply(List<Task> input) {
+            return input.isEmpty();
+          }
+        })
+        .retryIfExceptionOfType(IOException.class)
+        .retryIfRuntimeException()
+        .withWaitStrategy(WaitStrategies.fibonacciWait())
+        .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(30, TimeUnit.SECONDS))
+        // .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+        .build();
+
+    List<Task> status = taskStatusRetryer.call(taskStatusCallable);
+
+    // ---- RECUPERA IL CONTAINER ASSOCIATO ALLA TASK --------------------------
+    Callable<TaskStatusContainerStatus> containerStatusCallable = new Callable<TaskStatusContainerStatus>() {
+      public TaskStatusContainerStatus call() throws Exception {
+        Request request = Request.builder()
+            .method(Request.Method.GET)
+            .path("/tasks/" + status.get(0).getId())
+            .build();
+
+        Response response = httpClient.execute(request);
+
+        ObjectMapper noExcpMapper = new ObjectMapper();
+        noExcpMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        String responseBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+        Task task = noExcpMapper.readValue(responseBody, Task.class);
+
+        System.out.println(task.getStatus().getContainerStatus());
+        return task.getStatus().getContainerStatus();
+      }
+    };
+
+    Retryer<TaskStatusContainerStatus> containerStatusRetryer = RetryerBuilder.<TaskStatusContainerStatus>newBuilder()
+        .retryIfResult(Predicates.<TaskStatusContainerStatus>isNull())
+        .retryIfExceptionOfType(IOException.class)
+        .retryIfRuntimeException()
+        .withWaitStrategy(WaitStrategies.fibonacciWait())
+        .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(30, TimeUnit.SECONDS))
+        // .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+        .build();
+
+    TaskStatusContainerStatus containerStatus = containerStatusRetryer.call(containerStatusCallable);
+
+    return containerStatus;
+  }
+
+  private RunnerContext runActionInContainer_debug(RunnerAction action) {
     DockerClient client = docker.client();
     DockerHttpClient httpClient = docker.http();
 
@@ -64,8 +180,8 @@ public class DockerContainerActionsService implements ContainerActionsService {
     // {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"chentex/random-logger\",\"Args\":[\"100\",\"400\",\"100\"]},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
     // """;
     String serviceConfig = """
-      {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"alpine\",\"TTY\":true,\"OpenStdin\":true},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
-          """;
+        {\"Name\":\"task01\",\"TaskTemplate\":{\"ContainerSpec\":{\"Image\":\"alpine\",\"TTY\":true,\"OpenStdin\":true},\"RestartPolicy\":{\"Condition\":\"none\",\"MaxAttempts\":0}},\"Mode\":{\"Replicated\":{\"Replicas\":1}}}
+            """;
 
     ObjectMapper mapper = new ObjectMapper();
     try {
@@ -180,7 +296,6 @@ public class DockerContainerActionsService implements ContainerActionsService {
       // return Arrays.asList(container.getNames()).contains("/task01");
       // }).findFirst();
 
-
       resultCallback.awaitCompletion();
       System.out.println("Service Completed");
 
@@ -197,7 +312,7 @@ public class DockerContainerActionsService implements ContainerActionsService {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    return "";
+    return null;
   }
 
 }

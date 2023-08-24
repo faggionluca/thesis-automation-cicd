@@ -95,19 +95,17 @@ public class RunnableGraphService {
     Futures.addCallback(action.getListenableFuture(), new FutureCallback<Object>() {
       @Override
       public void onSuccess(Object result) {
-        // TODO: set complete on jobs
         logger.debug("[SUCCESS] finished executing RunnerAction name: {}", action.getJob().getName());
       }
 
       @Override
       public void onFailure(Throwable t) {
-        // TODO: set error on jobs
         logger.debug("[ERROR] on RunnerAction name: {}", action.getJob().getName());
       }
     }, executor);
   }
 
-  private void addDebugCallbackToLeafNode(RunnerAction current, ListenableFuture<List<String>> future,
+  private void addDebugCallbackToLeafNode(RunnerAction current, ListenableFuture<?> future,
       Executor executor) {
     if (!logger.isDebugEnabled()) {
       return;
@@ -115,14 +113,12 @@ public class RunnableGraphService {
     Futures.addCallback(future, new FutureCallback<Object>() {
       @Override
       public void onSuccess(Object result) {
-        // TODO: set complete on jobs
         logger.debug("[SUCCESS] result {}, before leaf node {}", result,
             current.getJob().getName());
       }
 
       @Override
       public void onFailure(Throwable t) {
-        // TODO: set error on jobs
         logger.debug("[ERROR] on tasks before leaf node {}", current.getJob().getName());
       }
     }, executor);
@@ -131,17 +127,17 @@ public class RunnableGraphService {
   public void executeGraph(Graph<RunnerAction, RunnableGraphEdge> graph, ExecutorService executorService)
       throws InterruptedException, ExecutionException {
     ListeningExecutorService service = MoreExecutors.listeningDecorator(executorService);
-    // Aggiungi i callback per ogni runnertask
-    graph.vertexSet().forEach(action -> addDebugCallbackForAction(action, service));
-
     List<ListenableFuture<?>> waitForAll = new ArrayList<>();
 
-    // TODO: check executors ThreadPoolTaskExecutor
+    // Aggiungi i callback di debug per ogni runnertask
+    graph.vertexSet().forEach(action -> addDebugCallbackForAction(action, service));
+
+    // Esegui ogni nodo del grafico orientato 
     TopologicalOrderIterator<RunnerAction, RunnableGraphEdge> iterator = new TopologicalOrderIterator<RunnerAction, RunnableGraphEdge>(
         graph);
     while (iterator.hasNext()) {
       RunnerAction current = iterator.next();
-      ListenableFutureTask<String> currentFuture = current.getListenableFuture();
+      ListenableFutureTask<RunnerContext> currentFuture = current.getListenableFuture();
       Set<RunnableGraphEdge> incomingEdges = graph.incomingEdgesOf(current);
       Set<RunnableGraphEdge> outgoingEdges = graph.outgoingEdgesOf(current);
 
@@ -156,11 +152,12 @@ public class RunnableGraphService {
         // ma questo nodo dipende da altri nodi
 
         ListenableFutureTask<Object> leaf = ListenableFutureTask.create(() -> {
-          ListenableFuture<List<String>> previusFutures = Futures
+          ListenableFuture<List<RunnerContext>> previusFutures = Futures
               .allAsList(incomingEdges.stream().map(edge -> edge.getSourceAction().getListenableFuture()).toList());
           addDebugCallbackToLeafNode(current, previusFutures, service);
-          previusFutures.get();
-          // TODO: merge the context
+          List<RunnerContext> previousContexts = previusFutures.get();
+          // Mergiamo i context derivanti dai precedenti nodi
+          ContextService.mergeContextOn(current.getContext(), previousContexts);
           ListenableFuture<?> leafTask = service.submit(currentFuture);
           leafTask.get();
           return null;
@@ -171,14 +168,15 @@ public class RunnableGraphService {
         // qui siamo in un nodo dipendente sia da altri nodi sia esistono nodi
         // dipendenti da questo nodo
 
-        ListenableFuture<List<String>> previusFutures = Futures
+        ListenableFuture<List<RunnerContext>> previusFutures = Futures
             .allAsList(incomingEdges.stream().map(edge -> edge.getSourceAction().getListenableFuture()).toList());
-        Futures.addCallback(previusFutures, new FutureCallback<List<String>>() {
+        Futures.addCallback(previusFutures, new FutureCallback<List<RunnerContext>>() {
           @Override
-          public void onSuccess(List<String> configResults) {
-            logger.debug("[SUCCESS] result {}, starting task {}", configResults.toString(),
+          public void onSuccess(List<RunnerContext> previousContexts) {
+            logger.debug("[SUCCESS] result {}, starting task {}", previousContexts.toString(),
                 current.getJob().getName());
-            // TODO: merge the context
+            // Mergiamo i context derivanti dai precedenti nodi
+            ContextService.mergeContextOn(current.getContext(), previousContexts);
             waitForAll.add(service.submit(currentFuture));
           }
 

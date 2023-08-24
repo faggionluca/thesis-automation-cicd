@@ -33,12 +33,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.lucafaggion.thesis.develop.config.AppConfig;
 import com.lucafaggion.thesis.develop.graph.RunnableGraphEdge;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
+import com.lucafaggion.thesis.develop.model.RunnerContext;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.service.ContainerActionsService;
 import com.lucafaggion.thesis.develop.service.ContextService;
 import com.lucafaggion.thesis.develop.service.RunnableGraphService;
 import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
 import com.lucafaggion.thesis.test.UnitTestFixtures;
+
+import lombok.Data;
 
 @Import(AppConfig.class)
 @SpringBootTest(classes = { RunnableGraphService.class, RunnerTaskConfigService.class, ThreadPoolTaskExecutor.class,
@@ -61,6 +64,12 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
 
   protected RunnerTaskConfig runnerTaskConfig;
 
+  @Data
+  protected class ContextTestObject {
+    public final String name = "Luca";
+    public final String username = "faggionluca";
+  }
+
   protected void waitRandomBetween(int low, int high) throws InterruptedException {
     TimeUnit.MILLISECONDS.sleep((new Random()).nextInt(high - low) + low);
   }
@@ -68,10 +77,7 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
   @BeforeEach
   void setUpRunnableGraphServiceIntegrationTest() throws JsonMappingException, JsonProcessingException, IOException {
     runnerTaskConfig = runnerTaskConfigService.from(UnitTestFixtures.loadConfig("runnerTaskConfig"));
-    contextService.getContext().setVariable("user", new Object() {
-      public final String name = "Luca";
-      public final String username = "faggionluca";
-    });
+    contextService.getContext().setVariable("user", new ContextTestObject());
     taskExecutor = Executors.newFixedThreadPool(20);
   }
 
@@ -103,14 +109,16 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
         "Dependent-Task3",
         "Dependent-Task2", "Final-task");
     List<String> executionResult = new LinkedList<>();
-    Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<String>() {
+    Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<RunnerContext>() {
       @Override
-      public String answer(InvocationOnMock invocation) throws InterruptedException {
+      public RunnerContext answer(InvocationOnMock invocation) throws Exception {
         RunnerAction runnerAction = (RunnerAction) invocation.getArgument(0);
+        RunnerContext context = runnerAction.getContext().copy();
+        context.setVariable("current", runnerAction.getJob().getName());
         executionResult.add(runnerAction.getJob().getName());
         waitRandomBetween(2000, 3000);
         System.out.println("finished runActionInContainer of " + runnerAction.getJob().getName());
-        return "ok";
+        return context;
       }
     });
 
@@ -129,11 +137,12 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
   @Test
   void shouldCorrectlyExecuteTheGraphWithErrors()
       throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
-    Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<String>() {
+    Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<RunnerContext>() {
       @Override
-      public String answer(InvocationOnMock invocation) throws InterruptedException {
+      public RunnerContext answer(InvocationOnMock invocation) throws Exception {
         RunnerAction runnerAction = (RunnerAction) invocation.getArgument(0);
-        // executionResult.add(runnerAction.getJob().getName());
+        RunnerContext context = runnerAction.getContext().copy();
+        context.setVariable("current", runnerAction.getJob().getName());
         waitRandomBetween(2000, 3000);
         // solo questa runner action fallira!
         if (runnerAction.getJob().getName().equals("Dependent-Task3")) {
@@ -141,7 +150,7 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
           throw new NoSuchElementException("error on task " + runnerAction.getJob().getName());
         }
         System.out.println("finished runActionInContainer of " + runnerAction.getJob().getName());
-        return "ok";
+        return context;
       }
     });
     System.out.println("Creating and executing the graph....");
