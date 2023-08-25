@@ -63,8 +63,34 @@ public class DockerContainerActionsService implements ContainerActionsService {
   @Autowired
   ObjectMapper mapper;
 
-  private void execJobTask(String containerId, RunnerJobStep runnerJobStep) {
-    // TODO: implement
+  private InspectExecResponse execJobTask(String containerId, RunnerJobStep runnerJobStep, RunnerContext context) throws InterruptedException {
+
+    DockerClient client = docker.client();
+
+    ResultCallback.Adapter<Frame> logCallback = new ResultCallback.Adapter<Frame>() {
+      @Override
+      public void onNext(Frame logfFrame) {
+        System.out.println(logfFrame.toString());
+      }
+    };
+
+    logger.debug("Running RunnerJobStep with template: {}", runnerJobStep.getRun());
+    String runCmd = runnerTaskConfigService.compile(runnerJobStep.getRun(), context.toThymeleafContext())
+    logger.debug("Running RunnerJobStep with compiled CMD: {}", runCmd);
+
+    ExecCreateCmdResponse execCmdId = client.execCreateCmd(containerId)
+        .withCmd(runCmd)
+        .withAttachStderr(true)
+        .withAttachStdin(true)
+        .withAttachStdout(true)
+        .withPrivileged(true)
+        .withUser("root")
+        .withTty(true)
+        .exec();
+    Adapter<Frame> runExecCmd = client.execStartCmd(execCmdId.getId()).exec(logCallback);
+    runExecCmd.awaitCompletion();
+    InspectExecResponse result = client.inspectExecCmd(execCmdId.getId()).exec();
+    return result;
   }
 
   private void execJob(String containerId, RunnerJob runnerJob) {
@@ -73,7 +99,6 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
   @Override
   public RunnerContext runActionInContainer(RunnerAction action) {
-
     return null;
   }
 
@@ -85,16 +110,16 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
   public String createService(RunnerAction action) throws IOException {
     DockerClient client = docker.client();
-    DockerHttpClient httpClient = docker.http();
 
     // ---- AGGIORNIAMO IL CONTEXT DELL'ACTION --------------------------
     action.getContext().setVariable("job", action.getJob());
-    
+
     // ---- COMPILIAMO IL TEMPLATE DEL DOCKER SERVICE --------------------------
     Resource serviceConfigTemplate = resourceLoader
         .getResource("classpath:templates/default_docker_service.config.json");
     String serviceConfig = new String(Files.readAllBytes(serviceConfigTemplate.getFile().toPath()));
-    logger.debug("Loaded Docker service config template from {} with value: {}", serviceConfigTemplate.getFile().toPath(), serviceConfig);
+    logger.debug("Loaded Docker service config template from {} with value: {}",
+        serviceConfigTemplate.getFile().toPath(), serviceConfig);
 
     // ---- CREA IL DOCKER SERVICE --------------------------
     String compiledConfig = runnerTaskConfigService.compile(serviceConfig, action.getContext().toThymeleafContext());
@@ -108,8 +133,9 @@ public class DockerContainerActionsService implements ContainerActionsService {
   /*
    * Crea un Docker Swarm service task container
    */
-  public TaskStatusContainerStatus retriveContainerOfService(RunnerAction action, String serviceId) throws ExecutionException, RetryException, IOException {
-      
+  public TaskStatusContainerStatus retriveContainerOfService(String serviceId)
+      throws ExecutionException, RetryException, IOException {
+
     DockerClient client = docker.client();
     DockerHttpClient httpClient = docker.http();
 
@@ -146,13 +172,8 @@ public class DockerContainerActionsService implements ContainerActionsService {
             .build();
 
         Response response = httpClient.execute(request);
-
-        ObjectMapper noExcpMapper = new ObjectMapper();
-        noExcpMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String responseBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-        Task task = noExcpMapper.readValue(responseBody, Task.class);
-
-        System.out.println(task.getStatus().getContainerStatus());
+        Task task = mapper.readValue(responseBody, Task.class);
         return task.getStatus().getContainerStatus();
       }
     };
@@ -167,7 +188,7 @@ public class DockerContainerActionsService implements ContainerActionsService {
         .build();
 
     TaskStatusContainerStatus containerStatus = containerStatusRetryer.call(containerStatusCallable);
-
+    logger.debug("Retrived container from task with: {}", containerStatus);
     return containerStatus;
   }
 

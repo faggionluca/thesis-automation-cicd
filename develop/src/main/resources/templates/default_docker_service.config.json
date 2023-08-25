@@ -1,8 +1,8 @@
 {
-  "Name": "[${job.name}]",
+  "Name": "[(${job.name})]",
   "TaskTemplate": {
     "ContainerSpec": {
-      "Image": "[${job.image}]",
+      "Image": "[(${job.image})]",
       "TTY": true,
       "OpenStdin": true
     },

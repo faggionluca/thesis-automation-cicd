@@ -3,35 +3,37 @@ package com.lucafaggion.thesis.test.service;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.dockerjava.api.model.TaskStatusContainerStatus;
+import com.github.rholder.retry.RetryException;
+import com.lucafaggion.thesis.develop.config.AppConfig;
+import com.lucafaggion.thesis.develop.config.TemplateEngineConfig;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.service.ContextService;
 import com.lucafaggion.thesis.develop.service.DockerContainerActionsService;
+import com.lucafaggion.thesis.develop.service.DockerService;
 import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
 import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 import lombok.Data;
 
-// @Import(AppConfig.class)
-// @SpringBootTest(classes = { RunnerTaskConfigService.class, ThreadPoolTaskExecutor.class,
-//     SpringTemplateEngine.class, ContextService.class, DockerContainerActionsService.class, DockerService.class })
-public class DockerContainerActionServiceIntegrationTest extends ServiceIntegrationFixtures {
-
-  @Value("classpath:resources/templates/default_docker_service.config.json")
-  Resource serviceConfigTemplate;
+@Import({ AppConfig.class , TemplateEngineConfig.class})
+@SpringBootTest(classes = { RunnerTaskConfigService.class, SpringTemplateEngine.class, ContextService.class,
+    DockerContainerActionsService.class, DockerService.class })
+public class DockerContainerActionServiceIntegrationTest extends UnitTestFixtures {
 
   @Autowired
   DockerContainerActionsService containerActionsService;
@@ -70,11 +72,6 @@ public class DockerContainerActionServiceIntegrationTest extends ServiceIntegrat
     assertNotNull(containerActionsService);
     assertNotNull(contextService);
     assertNotNull(runnerAction);
-    // String classpath = System.getProperty("java.class.path");
-    // String[] classPathValues = classpath.split(File.pathSeparator);
-    // System.out.println(Arrays.toString(classPathValues));
-    InputStream is = new ClassPathResource("templates/default_docker_service.config.json").getInputStream();
-    assertNotNull(is);
   }
 
   @Test
@@ -82,6 +79,18 @@ public class DockerContainerActionServiceIntegrationTest extends ServiceIntegrat
     String serviceId = containerActionsService.createService(runnerAction);
 
     assertNotNull(serviceId, "The service should be created");
+    TimeUnit.MILLISECONDS.sleep(5000);
+    containerActionsService.shutDownService(serviceId);
+  }
+
+  @Test
+  void shouldBeAbleToRetriveTheContainer() throws ExecutionException, RetryException, IOException, InterruptedException {
+    String serviceId = containerActionsService.createService(runnerAction);
+    TaskStatusContainerStatus containerStatus = containerActionsService.retriveContainerOfService(serviceId);
+
+    assertNotNull(serviceId, "The service should be created");
+    assertNotNull(containerStatus, "The containerStatus should be not null");
+
     TimeUnit.MILLISECONDS.sleep(5000);
     containerActionsService.shutDownService(serviceId);
   }
