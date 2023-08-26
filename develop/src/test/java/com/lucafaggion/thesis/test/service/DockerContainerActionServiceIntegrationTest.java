@@ -89,6 +89,7 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     RunnerTaskConfig runnerTaskConfigSingleJob = runnerTaskConfigService
         .from(UnitTestFixtures.loadConfig("runnerTaskConfigSingleJob"));
     runnerTaskConfigSingleJob.setEvent(repoPushEvent);
+    runnerTaskConfig.setEvent(repoPushEvent);
 
     
     contextService.getContext().setVariable("user", new ContextTestObject());
