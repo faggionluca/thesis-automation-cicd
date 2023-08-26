@@ -38,7 +38,7 @@ public class GitHubAPIServiceTest extends ServiceIntegrationFixtures {
 
   protected RepoPushEvent buildRepoPushEvent( Repo repo) {
     return RepoPushEvent.builder()
-        .after("720e4835dff4d74ae9694e086e9d9bc08f1b12f1")
+        .after("b3ced8a3d475949f458cb78af6accaa12892454b")
         .before("0000000000000000000000000000000000000000")
         .ref("refs/heads/test")
         .repository(repo)

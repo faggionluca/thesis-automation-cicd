@@ -1,7 +1,7 @@
 {
   "ref": "refs/heads/main",
-  "before": "720e4835dff4d74ae9694e086e9d9bc08f1b12f1",
-  "after": "f7173bdc23e895bf2d0f71952bfae430ae716350",
+  "before": "f7173bdc23e895bf2d0f71952bfae430ae716350",
+  "after": "b3ced8a3d475949f458cb78af6accaa12892454b",
   "repository": {
     "id": 674153713,
     "node_id": "R_kgDOKC7E8Q",
@@ -72,7 +72,7 @@
     "deployments_url": "https://api.github.com/repos/faggionluca/webhook-events/deployments",
     "created_at": 1691053533,
     "updated_at": "2023-08-03T09:05:33Z",
-    "pushed_at": 1692527025,
+    "pushed_at": 1693089644,
     "git_url": "git://github.com/faggionluca/webhook-events.git",
     "ssh_url": "git@github.com:faggionluca/webhook-events.git",
     "clone_url": "https://github.com/faggionluca/webhook-events.git",
@@ -136,15 +136,15 @@
   "deleted": false,
   "forced": false,
   "base_ref": null,
-  "compare": "https://github.com/faggionluca/webhook-events/compare/720e4835dff4...f7173bdc23e8",
+  "compare": "https://github.com/faggionluca/webhook-events/compare/f7173bdc23e8...b3ced8a3d475",
   "commits": [
     {
-      "id": "f7173bdc23e895bf2d0f71952bfae430ae716350",
-      "tree_id": "fa963ceb43e1764a9927fa9edec2b1a836669804",
+      "id": "b3ced8a3d475949f458cb78af6accaa12892454b",
+      "tree_id": "f99b82bd606ec5028e5ce5622baec325846dd82f",
       "distinct": true,
-      "message": "Aggiornata variabile",
-      "timestamp": "2023-08-20T12:23:43+02:00",
-      "url": "https://github.com/faggionluca/webhook-events/commit/f7173bdc23e895bf2d0f71952bfae430ae716350",
+      "message": "Nuova config",
+      "timestamp": "2023-08-27T00:40:41+02:00",
+      "url": "https://github.com/faggionluca/webhook-events/commit/b3ced8a3d475949f458cb78af6accaa12892454b",
       "author": {
         "name": "Darkimage",
         "email": "luc-af@live.it",
@@ -167,12 +167,12 @@
     }
   ],
   "head_commit": {
-    "id": "f7173bdc23e895bf2d0f71952bfae430ae716350",
-    "tree_id": "fa963ceb43e1764a9927fa9edec2b1a836669804",
+    "id": "b3ced8a3d475949f458cb78af6accaa12892454b",
+    "tree_id": "f99b82bd606ec5028e5ce5622baec325846dd82f",
     "distinct": true,
-    "message": "Aggiornata variabile",
-    "timestamp": "2023-08-20T12:23:43+02:00",
-    "url": "https://github.com/faggionluca/webhook-events/commit/f7173bdc23e895bf2d0f71952bfae430ae716350",
+    "message": "Nuova config",
+    "timestamp": "2023-08-27T00:40:41+02:00",
+    "url": "https://github.com/faggionluca/webhook-events/commit/b3ced8a3d475949f458cb78af6accaa12892454b",
     "author": {
       "name": "Darkimage",
       "email": "luc-af@live.it",
