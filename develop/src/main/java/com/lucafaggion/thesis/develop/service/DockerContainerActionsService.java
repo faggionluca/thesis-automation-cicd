@@ -3,6 +3,7 @@ package com.lucafaggion.thesis.develop.service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -43,16 +44,15 @@ import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerContext;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerJobStep;
+import com.lucafaggion.thesis.develop.service.exceptions.RunnerJobStepExecutionException;
 
 @Service
 public class DockerContainerActionsService implements ContainerActionsService {
 
-  // @Value("classpath:templates/default_docker_service.config.json")
-  // Resource serviceConfigTemplate;
+  private final static Logger logger = LoggerFactory.getLogger(DockerContainerActionsService.class);
+
   @Autowired
   ResourceLoader resourceLoader;
-
-  private final static Logger logger = LoggerFactory.getLogger(DockerContainerActionsService.class);
 
   @Autowired
   RunnerTaskConfigService runnerTaskConfigService;
@@ -63,43 +63,69 @@ public class DockerContainerActionsService implements ContainerActionsService {
   @Autowired
   ObjectMapper mapper;
 
-  private InspectExecResponse execJobTask(String containerId, RunnerJobStep runnerJobStep, RunnerContext context) throws InterruptedException {
+  public long execJobTask(String containerId, RunnerJobStep runnerJobStep, RunnerContext context)
+      throws InterruptedException {
+
+    if (runnerJobStep.getRun() == null) {
+      return 0;
+    }
+    // Aggiungi la task al context
+    context.setVariable("current_task", runnerJobStep);
 
     DockerClient client = docker.client();
 
     ResultCallback.Adapter<Frame> logCallback = new ResultCallback.Adapter<Frame>() {
       @Override
       public void onNext(Frame logfFrame) {
+        // System.out.println(String.format("[%s] %s", logfFrame.getStreamType(), new String(logfFrame.getPayload(), 8, logfFrame.getPayload().length ,StandardCharsets.UTF_8)).trim());
         System.out.println(logfFrame.toString());
       }
     };
 
+    List<String> cmd = new LinkedList<>();
+  
     logger.debug("Running RunnerJobStep with template: {}", runnerJobStep.getRun());
-    String runCmd = runnerTaskConfigService.compile(runnerJobStep.getRun(), context.toThymeleafContext())
-    logger.debug("Running RunnerJobStep with compiled CMD: {}", runCmd);
+    for (String run : runnerJobStep.getRun()) {
+      cmd.add(runnerTaskConfigService.compile(run, context.toThymeleafContext()));
+    }
+    logger.debug("Running RunnerJobStep with compiled CMD: {}", cmd);
 
     ExecCreateCmdResponse execCmdId = client.execCreateCmd(containerId)
-        .withCmd(runCmd)
+        .withCmd(cmd.stream().toArray(String[]::new))
         .withAttachStderr(true)
         .withAttachStdin(true)
         .withAttachStdout(true)
         .withPrivileged(true)
         .withUser("root")
-        .withTty(true)
+        .withTty(false)
         .exec();
     Adapter<Frame> runExecCmd = client.execStartCmd(execCmdId.getId()).exec(logCallback);
     runExecCmd.awaitCompletion();
     InspectExecResponse result = client.inspectExecCmd(execCmdId.getId()).exec();
-    return result;
+
+    logger.debug("RunnerJobStep result: {}", result.getExitCodeLong());
+    if (result.getExitCodeLong() != 0) {
+      throw new RunnerJobStepExecutionException();
+    }
+
+    return result.getExitCodeLong();
   }
 
-  private void execJob(String containerId, RunnerJob runnerJob) {
-    // TODO: implement
+  public void execJob(String containerId, RunnerJob runnerJob, RunnerContext context) throws Exception {
+    try {
+      for (RunnerJobStep step : runnerJob.getSteps()) {
+        long result = execJobTask(containerId, step, context);
+        logger.debug("RunnerJobStep result: {}", result);
+      }
+    } catch (Exception e) {
+      // TODO: handle exception an save ERORRS
+      throw e;
+    } 
   }
 
   @Override
   public RunnerContext runActionInContainer(RunnerAction action) {
-    return null;
+    return null;           
   }
 
   public void shutDownService(String serviceId) {
@@ -113,6 +139,9 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
     // ---- AGGIORNIAMO IL CONTEXT DELL'ACTION --------------------------
     action.getContext().setVariable("job", action.getJob());
+    action.getContext().setVariable("task", action.getJob().getTaskConfig());
+    action.getContext().setVariable("event", action.getJob().getTaskConfig().getEvent());
+    action.getContext().setVariable("repository", action.getJob().getTaskConfig().getEvent().getRepository());
 
     // ---- COMPILIAMO IL TEMPLATE DEL DOCKER SERVICE --------------------------
     Resource serviceConfigTemplate = resourceLoader

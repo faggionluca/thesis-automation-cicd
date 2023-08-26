@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
@@ -47,7 +48,6 @@ public class WebhooksController {
     // Deserializziamo l'evento
     logger.debug("Received /webhook/event/push with HEADERS: {}, BODY: {}", headers, body);
     RepoPushEvent repoPushEvent = repoEventRepository.save(webhookService.deserializeToPushEvent(headers, body));
-    contextService.getContext().setVariable("event", repoPushEvent);
     logger.debug("Successfully deserialized /webhook/event/push RESULT: {}", repoPushEvent);
 
     // Recuperiamo la config per l'evento

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -40,7 +41,7 @@ public class UnitTestFixtures {
     try (Stream<Path> stream = Files.list(Paths.get(testDirectory))) {
       stream
           .filter(file -> !Files.isDirectory(file))
-          .forEachOrdered(file -> configs.put(file.getFileName().toString(), file.toString()));
+          .forEachOrdered(file -> configs.put(FilenameUtils.getBaseName(file.getFileName().toString()), file.toString()));
     }
   }
 
@@ -51,7 +52,7 @@ public class UnitTestFixtures {
    * @throws IOException
    */
   public static String loadConfig(String name) throws IOException {
-    String fileName = configs.get(name + ".yaml");
+    String fileName = configs.get(name);
     File configFile = new File(fileName);
     return Files.readAllLines(configFile.toPath()).stream().collect(Collectors.joining(System.lineSeparator()));
   }

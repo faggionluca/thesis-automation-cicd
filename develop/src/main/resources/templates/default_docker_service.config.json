@@ -2,7 +2,7 @@
   "Name": "[(${job.name})]",
   "TaskTemplate": {
     "ContainerSpec": {
-      "Image": "[(${job.image})]",
+      "Image": "[(${job.runOn})]",
       "TTY": true,
       "OpenStdin": true
     },

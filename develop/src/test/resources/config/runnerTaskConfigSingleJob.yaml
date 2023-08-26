@@ -1,0 +1,17 @@
+name: GitHub Actions Demo
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    steps:
+      - run: [echo, "🎉 The job was automatically triggered by a [(${event.after})] commit."]
+      - run: [echo, "🐧 This job is now running on a container with image [(${job.runOn})]!"]
+      - run: [echo, "🔎 The name of your branch is [(${event.ref})] and your repository is [(${repository.name})]."]
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - run: [echo, "💡 The [(${repository.name})] repository has been cloned to the runner."]
+      - run: [echo, "🖥️ The workflow is now ready to test your code on the runner."]
+      - name: List files in the repository
+        run: [ls]
+      - run: [echo, "🍏 This job's status is [(${event.status.status})]."]
+      - run: [apk, update, "&&", apk, upgrade]
+      - run: [apk, add, python3]

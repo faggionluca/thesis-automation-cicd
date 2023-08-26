@@ -2,12 +2,9 @@ package com.lucafaggion.thesis.develop.service.GitHub;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64;
@@ -15,37 +12,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.thymeleaf.context.Context;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucafaggion.thesis.common.config.AMQPCommonConfig;
-import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUserAndService;
 import com.lucafaggion.thesis.common.message.SearchUserAssociatedByUsernameAndService;
 import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
-import com.lucafaggion.thesis.develop.model.Repo;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.model.GitHub.GitHubFileContentResponse;
-import com.lucafaggion.thesis.develop.repository.RepoEventRepository;
-import com.lucafaggion.thesis.develop.repository.RepoRepository;
 import com.lucafaggion.thesis.develop.service.APIInterceptor;
 import com.lucafaggion.thesis.develop.service.ContextService;
 import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
 import com.lucafaggion.thesis.develop.service.exceptions.ConfigurationNotFoundException;
-import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 @Service
 public class GitHubAPIService {
