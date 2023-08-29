@@ -36,6 +36,7 @@ import com.lucafaggion.thesis.develop.service.exceptions.ConfigurationNotFoundEx
 public class GitHubAPIService {
 
   static String serviceName = "github";
+  static String serviceHost = "github.com";
 
   private final static Logger logger = LoggerFactory.getLogger(GitHubAPIService.class);
 
@@ -89,8 +90,9 @@ public class GitHubAPIService {
     uriVariables.put("repo_name", repoUserAndName[1]);
 
     // Aggiungiamo dati al context
-    contextService.getContext().setVariable("repo_user", repoUserAndName[0]);
-    contextService.getContext().setVariable("repo_name", repoUserAndName[1]);
+    contextService.getContext().setVariable(ContextService.REPO_USER, repoUserAndName[0]);
+    contextService.getContext().setVariable(ContextService.REPO_NAME, repoUserAndName[1]);
+    contextService.getContext().setVariable(ContextService.REPO_HOST, serviceHost);
 
     // Aggiungiamo il token al context
     SearchUserAssociatedByUsernameAndService search = SearchUserAssociatedByUsernameAndService.builder().username(repoUserAndName[0])
@@ -101,7 +103,7 @@ public class GitHubAPIService {
         search));
 
     if (userAssociatedAccount.isPresent()) {
-      contextService.getContext().setVariable("service_token", userAssociatedAccount.get().getToken());
+      contextService.getContext().setVariable(ContextService.REPO_TOKEN, userAssociatedAccount.get().getToken());
     }
 
     // eseguiamo la richesta

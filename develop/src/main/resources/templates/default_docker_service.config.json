@@ -3,8 +3,12 @@
   "TaskTemplate": {
     "ContainerSpec": {
       "Image": "[(${job.runOn})]",
+      "labels": {
+        "com.lucafaggion.thesis": true
+      },
       "TTY": true,
-      "OpenStdin": true
+      "OpenStdin": true,
+      "Mounts": "[($container?.mounts)]"
     },
     "RestartPolicy": {
       "Condition": "none",

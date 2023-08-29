@@ -1,0 +1,226 @@
+{
+  "Id": "a545a8914d515c6c9d3dff9953d1f27dbc64c2a99628110d06cc49690658ead8",
+  "Created": "2023-08-28T10:42:15.048704985Z",
+  "Path": "./git_cred.sh",
+  "Args": [
+    "github.com",
+    "faggionluca",
+    "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",
+    "https://github.com/faggionluca/thesis-automation-cicd.git"
+  ],
+  "State": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2023-08-28T10:42:15.956407105Z",
+    "FinishedAt": "2023-08-28T10:42:17.483840903Z"
+  },
+  "Image": "sha256:f345bb0cb8b83fb521bfda51169acbb5e49ac1eee575b74b543d3d94872033b7",
+  "ResolvConfPath": "/var/lib/docker/containers/a545a8914d515c6c9d3dff9953d1f27dbc64c2a99628110d06cc49690658ead8/resolv.conf",
+  "HostnamePath": "/var/lib/docker/containers/a545a8914d515c6c9d3dff9953d1f27dbc64c2a99628110d06cc49690658ead8/hostname",
+  "HostsPath": "/var/lib/docker/containers/a545a8914d515c6c9d3dff9953d1f27dbc64c2a99628110d06cc49690658ead8/hosts",
+  "LogPath": "/var/lib/docker/containers/a545a8914d515c6c9d3dff9953d1f27dbc64c2a99628110d06cc49690658ead8/a545a8914d515c6c9d3dff9953d1f27dbc64c2a99628110d06cc49690658ead8-json.log",
+  "Name": "/naughty_elbakyan",
+  "RestartCount": 0,
+  "Driver": "overlay2",
+  "Platform": "linux",
+  "MountLabel": "",
+  "ProcessLabel": "",
+  "AppArmorProfile": "",
+  "ExecIDs": null,
+  "HostConfig": {
+    "Binds": null,
+    "ContainerIDFile": "",
+    "LogConfig": {
+      "Type": "json-file",
+      "Config": {}
+    },
+    "NetworkMode": "default",
+    "PortBindings": {},
+    "RestartPolicy": {
+      "Name": "no",
+      "MaximumRetryCount": 0
+    },
+    "AutoRemove": false,
+    "VolumeDriver": "",
+    "VolumesFrom": null,
+    "ConsoleSize": [
+      27,
+      158
+    ],
+    "CapAdd": null,
+    "CapDrop": null,
+    "CgroupnsMode": "host",
+    "Dns": [],
+    "DnsOptions": [],
+    "DnsSearch": [],
+    "ExtraHosts": null,
+    "GroupAdd": null,
+    "IpcMode": "private",
+    "Cgroup": "",
+    "Links": null,
+    "OomScoreAdj": 0,
+    "PidMode": "",
+    "Privileged": false,
+    "PublishAllPorts": false,
+    "ReadonlyRootfs": false,
+    "SecurityOpt": null,
+    "UTSMode": "",
+    "UsernsMode": "",
+    "ShmSize": 67108864,
+    "Runtime": "runc",
+    "Isolation": "",
+    "CpuShares": 0,
+    "Memory": 0,
+    "NanoCpus": 0,
+    "CgroupParent": "",
+    "BlkioWeight": 0,
+    "BlkioWeightDevice": [],
+    "BlkioDeviceReadBps": [],
+    "BlkioDeviceWriteBps": [],
+    "BlkioDeviceReadIOps": [],
+    "BlkioDeviceWriteIOps": [],
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "CpuRealtimePeriod": 0,
+    "CpuRealtimeRuntime": 0,
+    "CpusetCpus": "",
+    "CpusetMems": "",
+    "Devices": [],
+    "DeviceCgroupRules": null,
+    "DeviceRequests": null,
+    "MemoryReservation": 0,
+    "MemorySwap": 0,
+    "MemorySwappiness": null,
+    "OomKillDisable": false,
+    "PidsLimit": null,
+    "Ulimits": null,
+    "CpuCount": 0,
+    "CpuPercent": 0,
+    "IOMaximumIOps": 0,
+    "IOMaximumBandwidth": 0,
+    "MaskedPaths": [
+      "/proc/asound",
+      "/proc/acpi",
+      "/proc/kcore",
+      "/proc/keys",
+      "/proc/latency_stats",
+      "/proc/timer_list",
+      "/proc/timer_stats",
+      "/proc/sched_debug",
+      "/proc/scsi",
+      "/sys/firmware"
+    ],
+    "ReadonlyPaths": [
+      "/proc/bus",
+      "/proc/fs",
+      "/proc/irq",
+      "/proc/sys",
+      "/proc/sysrq-trigger"
+    ]
+  },
+  "GraphDriver": {
+    "Data": {
+      "LowerDir": "/var/lib/docker/overlay2/829b04fd2cdf1f5efa3246b3bae34ebe32833f8c15e8679df5652bea7d7744c9-init/diff:/var/lib/docker/overlay2/yirjujqxhkzwtuol658crbgz5/diff:/var/lib/docker/overlay2/fm5gwvd1qauf5czp8pwcnz2cb/diff:/var/lib/docker/overlay2/3b344da2148c1b792e3afebd705785320950662a22fb144354c3a6f733ca0312/diff:/var/lib/docker/overlay2/9e1b1ffc9b5cf248988464a55cae114d129b9dfedac9a5b0066f161f54789bb2/diff:/var/lib/docker/overlay2/bafd5ec5e5f464576be0fa75b439c5576a57ff827227f65dfeb4cae6bbfa6bb2/diff",
+      "MergedDir": "/var/lib/docker/overlay2/829b04fd2cdf1f5efa3246b3bae34ebe32833f8c15e8679df5652bea7d7744c9/merged",
+      "UpperDir": "/var/lib/docker/overlay2/829b04fd2cdf1f5efa3246b3bae34ebe32833f8c15e8679df5652bea7d7744c9/diff",
+      "WorkDir": "/var/lib/docker/overlay2/829b04fd2cdf1f5efa3246b3bae34ebe32833f8c15e8679df5652bea7d7744c9/work"
+    },
+    "Name": "overlay2"
+  },
+  "Mounts": [
+    {
+      "Type": "volume",
+      "Name": "92b9be71f1899cf87ac73028b5d9a76c291457c07f155400d09913d59395d0b2",
+      "Source": "/var/lib/docker/volumes/92b9be71f1899cf87ac73028b5d9a76c291457c07f155400d09913d59395d0b2/_data",
+      "Destination": "/repo",
+      "Driver": "local",
+      "Mode": "",
+      "RW": true,
+      "Propagation": ""
+    },
+    {
+      "Type": "volume",
+      "Name": "639d172f63d833ca41aef2673497cbb4f5243e298b50885e3978bdd5293e0edc",
+      "Source": "/var/lib/docker/volumes/639d172f63d833ca41aef2673497cbb4f5243e298b50885e3978bdd5293e0edc/_data",
+      "Destination": "/git",
+      "Driver": "local",
+      "Mode": "",
+      "RW": true,
+      "Propagation": ""
+    }
+  ],
+  "Config": {
+    "Hostname": "a545a8914d51",
+    "Domainname": "",
+    "User": "",
+    "AttachStdin": true,
+    "AttachStdout": true,
+    "AttachStderr": true,
+    "Tty": true,
+    "OpenStdin": true,
+    "StdinOnce": true,
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    ],
+    "Cmd": [
+      "github.com",
+      "faggionluca",
+      "fakepwd",
+      "https://github.com/faggionluca/thesis-automation-cicd.git"
+    ],
+    "Image": "gitcredhelper",
+    "Volumes": {
+      "/git": {},
+      "/repo": {}
+    },
+    "WorkingDir": "/git",
+    "Entrypoint": [
+      "./git_cred.sh"
+    ],
+    "OnBuild": null,
+    "Labels": {}
+  },
+  "NetworkSettings": {
+    "Bridge": "",
+    "SandboxID": "6fb21ccc04e5fb2d263d76261413c8269598d99b49cd1bf3aefd03c3ea4beb33",
+    "HairpinMode": false,
+    "LinkLocalIPv6Address": "",
+    "LinkLocalIPv6PrefixLen": 0,
+    "Ports": {},
+    "SandboxKey": "/var/run/docker/netns/6fb21ccc04e5",
+    "SecondaryIPAddresses": null,
+    "SecondaryIPv6Addresses": null,
+    "EndpointID": "",
+    "Gateway": "",
+    "GlobalIPv6Address": "",
+    "GlobalIPv6PrefixLen": 0,
+    "IPAddress": "",
+    "IPPrefixLen": 0,
+    "IPv6Gateway": "",
+    "MacAddress": "",
+    "Networks": {
+      "bridge": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "NetworkID": "99db67f656616eeb28d7c2063060b7f7f928a123ffeaf3f69fd7b0f6b8fa3803",
+        "EndpointID": "",
+        "Gateway": "",
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "MacAddress": "",
+        "DriverOpts": null
+      }
+    }
+  }
+}

@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -22,11 +23,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.async.ResultCallback.Adapter;
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.CreateServiceResponse;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.InspectExecResponse;
 import com.github.dockerjava.api.command.WaitContainerResultCallback;
 import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.Task;
 import com.github.dockerjava.api.model.TaskStatusContainerStatus;
@@ -45,6 +49,7 @@ import com.lucafaggion.thesis.develop.model.RunnerContext;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerJobStep;
 import com.lucafaggion.thesis.develop.service.exceptions.RunnerJobStepExecutionException;
+import com.lucafaggion.thesis.develop.util.DockerServiceUtils;
 
 @Service
 public class DockerContainerActionsService implements ContainerActionsService {
@@ -69,9 +74,6 @@ public class DockerContainerActionsService implements ContainerActionsService {
     if (runnerJobStep.getRun() == null) {
       return 0;
     }
-    // Aggiungi la task al context
-    context.setVariable("current_task", runnerJobStep);
-
     DockerClient client = docker.client();
 
     ResultCallback.Adapter<Frame> logCallback = new ResultCallback.Adapter<Frame>() {
@@ -120,12 +122,36 @@ public class DockerContainerActionsService implements ContainerActionsService {
     } catch (Exception e) {
       // TODO: handle exception an save ERORRS
       throw e;
-    } 
+    }
   }
+
+  public String cloneRepoUsingContainer(RunnerAction action){
+    DockerClient client = docker.client();
+
+    // ---- CREIAMO ED ESEGUIAMO IL CONTAINER --------------------------
+    CreateContainerResponse container = client.createContainerCmd("gitcredhelper")
+        .withCmd(DockerServiceUtils.getCloneCMD(action.getContext()))
+        .exec();
+
+    client.startContainerCmd(container.getId()).exec();
+    WaitContainerResultCallback resultCallback = new WaitContainerResultCallback();
+    client.waitContainerCmd(container.getId()).exec(resultCallback);
+    InspectContainerResponse containerInfo = client.inspectContainerCmd(container.getId()).exec();
+
+    // ---- AGGIORNIAMO IL CONTEXT CON LE MOUNTS  ------------------------
+    List<Mount> mounts = DockerServiceUtils.mounts(containerInfo, Map.of("repository", "/repo"));
+    ContextService.addMountsToContext(action.getContext(), mounts);
+
+    return containerInfo.getId();
+  } 
 
   @Override
   public RunnerContext runActionInContainer(RunnerAction action) {
-    return null;           
+
+    // ---- AGGIORNIAMO IL CONTEXT DELL'ACTION --------------------------
+    ContextService.setVariablesOfContextFor(action);
+    //TODO: ContexService.updateGlobalMounts
+    return null;
   }
 
   public void shutDownService(String serviceId) {
@@ -136,12 +162,6 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
   public String createService(RunnerAction action) throws IOException {
     DockerClient client = docker.client();
-
-    // ---- AGGIORNIAMO IL CONTEXT DELL'ACTION --------------------------
-    action.getContext().setVariable("job", action.getJob());
-    action.getContext().setVariable("task", action.getJob().getTaskConfig());
-    action.getContext().setVariable("event", action.getJob().getTaskConfig().getEvent());
-    action.getContext().setVariable("repository", action.getJob().getTaskConfig().getEvent().getRepository());
 
     // ---- COMPILIAMO IL TEMPLATE DEL DOCKER SERVICE --------------------------
     Resource serviceConfigTemplate = resourceLoader
@@ -218,6 +238,7 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
     TaskStatusContainerStatus containerStatus = containerStatusRetryer.call(containerStatusCallable);
     logger.debug("Retrived container from task with: {}", containerStatus);
+
     return containerStatus;
   }
 

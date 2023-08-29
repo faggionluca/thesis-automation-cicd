@@ -9,6 +9,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -55,6 +56,11 @@ public class RunnerContext implements IContext {
   @JsonIgnore
   public final Object getVariable(final String name) {
     return this.variables.get(name);
+  }
+
+  @JsonIgnore
+  public final <T> T getVariableAs(final String name) {
+    return (T)this.variables.get(name);
   }
 
   /**
@@ -117,6 +123,7 @@ public class RunnerContext implements IContext {
   public RunnerContext copy() throws JsonMappingException, JsonProcessingException {
     // configura ObjectMapper per serializzazione e deserializzazione
     ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setSerializationInclusion(Include.NON_NULL);
     objectMapper.activateDefaultTyping(new LaissezFaireSubTypeValidator(), ObjectMapper.DefaultTyping.EVERYTHING,
         As.PROPERTY);
     return objectMapper.readValue(objectMapper.writeValueAsString(this), RunnerContext.class);
@@ -130,6 +137,18 @@ public class RunnerContext implements IContext {
   public String toString() {
     try {
       ObjectMapper objectMapper = new ObjectMapper();
+      return objectMapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      return "";
+    }
+  }
+
+  public String toTypedString() {
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.setSerializationInclusion(Include.NON_NULL);
+      objectMapper.activateDefaultTyping(new LaissezFaireSubTypeValidator(), ObjectMapper.DefaultTyping.EVERYTHING,
+          As.PROPERTY);
       return objectMapper.writeValueAsString(this);
     } catch (JsonProcessingException e) {
       return "";
