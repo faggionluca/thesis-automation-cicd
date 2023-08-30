@@ -8,10 +8,13 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.RequestScope;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Mount;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerContext;
+import com.lucafaggion.thesis.develop.model.mixins.DockerAPIMountMixin;
 
 import lombok.Getter;
 
@@ -24,8 +27,8 @@ import lombok.Getter;
 @Getter
 public class ContextService {
 
-  public static final String CONTAINER_MOUNTS = "mounts@internal";
-  public static final String GLOBAL_MOUNTS = "mounts@global";
+  public static final String CONTAINER_MOUNTS = "mounts_internal";
+  public static final String GLOBAL_MOUNTS = "mounts_global";
 
   public static final String JOB = "job";
   public static final String TASK = "task";
@@ -55,12 +58,28 @@ public class ContextService {
       contextBase.setVariable(CONTAINER_MOUNTS, mounts);
       return;
     }
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.addMixIn(Mount.class, DockerAPIMountMixin.class);
 
-    List<Mount> currentMounts = contextBase.getVariableAs(CONTAINER_MOUNTS);
-    List<Mount> combined = Stream.concat(currentMounts.stream(), mounts.stream())
+    try {
+      System.out.println(mapper.writeValueAsString(mounts));
+    } catch (JsonProcessingException e) {
+
+    }
+
+    List<String> currentMounts = contextBase.getVariableAs(CONTAINER_MOUNTS);
+    List<String> combined = Stream.concat(currentMounts.stream(), mounts.stream().map(mount -> {
+      try {
+        return mapper.writeValueAsString(mount);
+      } catch (JsonProcessingException e) {
+        // TODO Auto-generated catch block
+        return null;
+      }
+    }).collect(Collectors.toList()).stream())
         .distinct()
         .collect(Collectors.toList());
     contextBase.setVariable(CONTAINER_MOUNTS, combined);
+
   }
 
   public static void updateGlobalMounts(RunnerContext contextBase, List<InspectContainerResponse.Mount> mounts) {
@@ -71,12 +90,12 @@ public class ContextService {
       contextBase.setVariable(GLOBAL_MOUNTS, mountNames);
       return;
     }
-    
+
     Set<String> currentMounts = contextBase.getVariableAs(GLOBAL_MOUNTS);
     Set<String> combined = Stream.concat(currentMounts.stream(), mountNames.stream())
         .distinct()
         .collect(Collectors.toSet());
-    contextBase.setVariable(GLOBAL_MOUNTS, combined); 
+    contextBase.setVariable(GLOBAL_MOUNTS, combined);
   }
 
   public static void setVariablesOfContextFor(RunnerAction action) {
@@ -86,6 +105,5 @@ public class ContextService {
     action.getContext().setVariable(REPO, action.getJob().getTaskConfig().getEvent().getRepository());
     action.getContext().setVariable(REPO_URL, action.getJob().getTaskConfig().getEvent().getRepository().getUrl());
   }
-
 
 }

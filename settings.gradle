@@ -11,6 +11,5 @@ rootProject.name = 'thesis-automation-cicd'
 include('common')
 include('develop')
 include('authserver')
-include('resourceserver')
-include('runnerclient')
-include('userresource')
+// include('resourceserver')
+// include('runnerclient')

@@ -8,7 +8,13 @@
       },
       "TTY": true,
       "OpenStdin": true,
-      "Mounts": "[($container?.mounts)]"
+      "Mounts": [[# th:each="mount : ${mounts_internal}"]
+        {
+          "Type": [(${mount.type})],
+          "Source": [(${mount.source})],
+          "Target": [(${mount.target})]
+        }
+      [/]]
     },
     "RestartPolicy": {
       "Condition": "none",

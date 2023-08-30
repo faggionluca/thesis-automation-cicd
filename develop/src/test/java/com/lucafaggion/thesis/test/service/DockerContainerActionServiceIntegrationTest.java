@@ -3,6 +3,8 @@ package com.lucafaggion.thesis.test.service;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -10,13 +12,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.model.Mount;
+import com.github.dockerjava.api.model.MountType;
+import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.TaskStatusContainerStatus;
 import com.github.rholder.retry.RetryException;
 import com.lucafaggion.thesis.develop.config.AppConfig;
@@ -38,7 +49,11 @@ import lombok.Data;
 @Import({ AppConfig.class, TemplateEngineConfig.class })
 @SpringBootTest(classes = { RunnerTaskConfigService.class, SpringTemplateEngine.class, ContextService.class,
     DockerContainerActionsService.class, DockerService.class })
+@EnableAutoConfiguration(exclude = {JpaRepositoriesAutoConfiguration.class, HibernateJpaAutoConfiguration.class, SecurityAutoConfiguration.class})
 public class DockerContainerActionServiceIntegrationTest extends UnitTestFixtures {
+
+  @Autowired
+  ResourceLoader resourceLoader;
 
   @Autowired
   DockerContainerActionsService containerActionsService;
@@ -91,7 +106,6 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     runnerTaskConfigSingleJob.setEvent(repoPushEvent);
     runnerTaskConfig.setEvent(repoPushEvent);
 
-    
     contextService.getContext().setVariable("user", new ContextTestObject());
 
     runnerAction = RunnerAction.builder()
@@ -167,6 +181,29 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     }
 
     containerActionsService.shutDownService(serviceId);
+  }
+
+  @Test
+  void compileACorrectDockerTemplate() throws IOException {
+    List<Mount> mounts = List.of(new Mount().withTarget("/repo").withSource("source-vol").withType(MountType.VOLUME));
+
+    Resource serviceConfigTemplate = resourceLoader
+        .getResource("classpath:templates/default_docker_service.config.json");
+    String serviceConfig = new String(Files.readAllBytes(serviceConfigTemplate.getFile().toPath()));
+
+    ContextService.setVariablesOfContextFor(runnerAction);
+    ContextService.addMountsToContext(runnerAction.getContext(), mounts);
+
+    System.out.println(runnerAction.getContext().toString());
+    System.out.println(runnerAction.getContext().getVariable(ContextService.CONTAINER_MOUNTS));
+
+    String compiledTemplate = runnerTaskConfigService.compile(serviceConfig,
+        runnerAction.getContext().toThymeleafContext());
+    System.out.println(compiledTemplate);
+
+    ServiceSpec spec = objectMapper.readValue(compiledTemplate, ServiceSpec.class);
+
+    System.out.println(spec);
   }
 
 }
