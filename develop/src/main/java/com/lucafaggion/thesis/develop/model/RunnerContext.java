@@ -5,8 +5,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
+import org.thymeleaf.spring6.expression.ThymeleafEvaluationContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -131,6 +134,13 @@ public class RunnerContext implements IContext {
 
   public Context toThymeleafContext() {
     return new Context(this.locale, this.variables);
+  }
+
+  public Context toThymeleafContext(ApplicationContext appContext) {
+    Context context = new Context(this.locale, this.variables);
+    final ThymeleafEvaluationContext evaluationContext = new ThymeleafEvaluationContext(appContext, appContext.getBean(GenericConversionService.class));
+    context.setVariable(ThymeleafEvaluationContext.THYMELEAF_EVALUATION_CONTEXT_CONTEXT_VARIABLE_NAME, evaluationContext);
+    return context;
   }
 
   @Override

@@ -17,10 +17,14 @@ import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfig
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -32,6 +36,7 @@ import com.github.dockerjava.api.model.TaskStatusContainerStatus;
 import com.github.rholder.retry.RetryException;
 import com.lucafaggion.thesis.develop.config.AppConfig;
 import com.lucafaggion.thesis.develop.config.TemplateEngineConfig;
+import com.lucafaggion.thesis.develop.config.converters.MountConverter;
 import com.lucafaggion.thesis.develop.model.Repo;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
@@ -46,11 +51,16 @@ import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 import lombok.Data;
 
-@Import({ AppConfig.class, TemplateEngineConfig.class })
-@SpringBootTest(classes = { RunnerTaskConfigService.class, SpringTemplateEngine.class, ContextService.class,
+@Import({ AppConfig.class, TemplateEngineConfig.class, MountConverter.class })
+@SpringBootTest(classes = { RunnerTaskConfigService.class,
+    ContextService.class,
     DockerContainerActionsService.class, DockerService.class })
-@EnableAutoConfiguration(exclude = {JpaRepositoriesAutoConfiguration.class, HibernateJpaAutoConfiguration.class, SecurityAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = { JpaRepositoriesAutoConfiguration.class, HibernateJpaAutoConfiguration.class,
+    SecurityAutoConfiguration.class })
 public class DockerContainerActionServiceIntegrationTest extends UnitTestFixtures {
+
+  @Autowired
+  ApplicationContext appContext;
 
   @Autowired
   ResourceLoader resourceLoader;
@@ -74,6 +84,18 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
   protected RunnerAction runnerAction;
 
   protected RunnerAction runnerActionSingle;
+
+  @Autowired
+  GenericConversionService conversionService;
+
+  @Autowired
+  Converter<Mount, String> converter;
+
+  @Autowired
+  TemplateEngine templateEngine;
+
+  @Autowired
+  SpringResourceTemplateResolver nonWebTemplateResolver;
 
   @Data
   protected class ContextTestObject {
@@ -185,7 +207,8 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
 
   @Test
   void compileACorrectDockerTemplate() throws IOException {
-    List<Mount> mounts = List.of(new Mount().withTarget("/repo").withSource("source-vol").withType(MountType.VOLUME));
+    List<Mount> mounts = List.of(new Mount().withTarget("/repo").withSource("source-vol").withType(MountType.VOLUME),
+        new Mount().withTarget("/test").withSource("source-test").withType(MountType.VOLUME));
 
     Resource serviceConfigTemplate = resourceLoader
         .getResource("classpath:templates/default_docker_service.config.json");
@@ -197,8 +220,13 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     System.out.println(runnerAction.getContext().toString());
     System.out.println(runnerAction.getContext().getVariable(ContextService.CONTAINER_MOUNTS));
 
+    // conversionService.addConverter(converter);
+    System.out.println(conversionService.canConvert(Mount.class, String.class));
+
+    String compiledTemplate_tmp = templateEngine.process("default_docker_service.config",
+        runnerAction.getContext().toThymeleafContext(appContext));
     String compiledTemplate = runnerTaskConfigService.compile(serviceConfig,
-        runnerAction.getContext().toThymeleafContext());
+        runnerAction.getContext().toThymeleafContext(appContext));
     System.out.println(compiledTemplate);
 
     ServiceSpec spec = objectMapper.readValue(compiledTemplate, ServiceSpec.class);

@@ -8,13 +8,10 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.RequestScope;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Mount;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerContext;
-import com.lucafaggion.thesis.develop.model.mixins.DockerAPIMountMixin;
 
 import lombok.Getter;
 
@@ -58,24 +55,9 @@ public class ContextService {
       contextBase.setVariable(CONTAINER_MOUNTS, mounts);
       return;
     }
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.addMixIn(Mount.class, DockerAPIMountMixin.class);
 
-    try {
-      System.out.println(mapper.writeValueAsString(mounts));
-    } catch (JsonProcessingException e) {
-
-    }
-
-    List<String> currentMounts = contextBase.getVariableAs(CONTAINER_MOUNTS);
-    List<String> combined = Stream.concat(currentMounts.stream(), mounts.stream().map(mount -> {
-      try {
-        return mapper.writeValueAsString(mount);
-      } catch (JsonProcessingException e) {
-        // TODO Auto-generated catch block
-        return null;
-      }
-    }).collect(Collectors.toList()).stream())
+    List<Mount> currentMounts = contextBase.getVariableAs(CONTAINER_MOUNTS);
+    List<Mount> combined = Stream.concat(currentMounts.stream(), mounts.stream())
         .distinct()
         .collect(Collectors.toList());
     contextBase.setVariable(CONTAINER_MOUNTS, combined);

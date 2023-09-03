@@ -8,7 +8,7 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 @Configuration
 public class TemplateEngineConfig {
-  
+
   @Bean
   SpringResourceTemplateResolver secondaryTemplateResolver(ApplicationContext applicationContext) {
     SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
@@ -17,17 +17,30 @@ public class TemplateEngineConfig {
     resolver.setSuffix(".yaml");
     resolver.setTemplateMode("TEXT");
     resolver.setCharacterEncoding("UTF-8");
-    resolver.setOrder(2);
+    resolver.setOrder(20);
     resolver.setCheckExistence(true);
     return resolver;
   }
 
   @Bean
-  StringTemplateResolver stringTemplateResolver() {
+  SpringResourceTemplateResolver nonWebTemplateResolver(ApplicationContext applicationContext) {
+    SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+    resolver.setApplicationContext(applicationContext);
+    resolver.setPrefix("classpath:/templates/");
+    resolver.setSuffix(".json");
+    resolver.setTemplateMode("JAVASCRIPT");
+    resolver.setCharacterEncoding("UTF-8");
+    resolver.setOrder(21);
+    resolver.setCheckExistence(true);
+    return resolver;
+  }
+
+  @Bean
+  StringTemplateResolver stringTemplateResolver(ApplicationContext applicationContext) {
     StringTemplateResolver resolver = new StringTemplateResolver();
     resolver.setTemplateMode("TEXT");
-    resolver.setOrder(3);
-    resolver.setCheckExistence(true);
+    resolver.setOrder(30);
+    // resolver.setCheckExistence(true);
     return resolver;
   }
 

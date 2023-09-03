@@ -13,26 +13,28 @@ import com.lucafaggion.thesis.develop.service.ContextService;
 public class DockerServiceUtils {
   // private Set<InspectContainerResponse> linkedContainers;
 
+
+  /**
+   * Extract the List of mounts from a container to Link them to another
+   * @param container
+   * @param declaredMounts the list to filter
+   */
   public static List<com.github.dockerjava.api.model.Mount> mounts(InspectContainerResponse container,
       Map<String, String> declaredMounts) {
 
-    // List<com.github.dockerjava.api.model.Mount> res = new ArrayList<>();
     List<com.github.dockerjava.api.model.Mount> res = container.getMounts().stream().filter((mount) -> declaredMounts.containsValue(mount.getDestination().getPath()))
         .map((mount) -> new com.github.dockerjava.api.model.Mount()
             .withSource(mount.getSource()).withTarget(mount.getDestination().getPath())
             .withType(MountType.VOLUME))
         .collect(Collectors.toList());
-
-    // for (Mount mount : container.getMounts()) {
-    // com.github.dockerjava.api.model.Mount current = new
-    // com.github.dockerjava.api.model.Mount()
-    // .withSource(mount.getSource()).withTarget(mount.getDestination().getPath())
-    // .withType(MountType.VOLUME);
-    // res.add(current);
-    // }
     return res;
   }
 
+
+  /**
+   * Creates the CMD Array for cloning the repo using a HelperContainer (gitcredhelper)
+   * @param context
+   */
   public static String[] getCloneCMD(RunnerContext context) {
     return Stream
         .of(context.getVariable(ContextService.REPO_HOST), context.getVariable(ContextService.REPO_USER),

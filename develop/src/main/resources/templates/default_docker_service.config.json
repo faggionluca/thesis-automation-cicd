@@ -8,7 +8,7 @@
       },
       "TTY": true,
       "OpenStdin": true,
-      "Mounts": [[${mounts_internal} ?: null]]
+      "Mounts": [ [(${{mounts_internal}})] ]
     },
     "RestartPolicy": {
       "Condition": "none",

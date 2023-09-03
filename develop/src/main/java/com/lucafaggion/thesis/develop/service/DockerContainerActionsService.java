@@ -2,7 +2,6 @@ package com.lucafaggion.thesis.develop.service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +56,9 @@ public class DockerContainerActionsService implements ContainerActionsService {
   private final static Logger logger = LoggerFactory.getLogger(DockerContainerActionsService.class);
 
   @Autowired
+  ApplicationContext appContext;
+
+  @Autowired
   ResourceLoader resourceLoader;
 
   @Autowired
@@ -79,13 +81,15 @@ public class DockerContainerActionsService implements ContainerActionsService {
     ResultCallback.Adapter<Frame> logCallback = new ResultCallback.Adapter<Frame>() {
       @Override
       public void onNext(Frame logfFrame) {
-        // System.out.println(String.format("[%s] %s", logfFrame.getStreamType(), new String(logfFrame.getPayload(), 8, logfFrame.getPayload().length ,StandardCharsets.UTF_8)).trim());
+        // System.out.println(String.format("[%s] %s", logfFrame.getStreamType(), new
+        // String(logfFrame.getPayload(), 8, logfFrame.getPayload().length
+        // ,StandardCharsets.UTF_8)).trim());
         System.out.println(logfFrame.toString());
       }
     };
 
     List<String> cmd = new LinkedList<>();
-  
+
     logger.debug("Running RunnerJobStep with template: {}", runnerJobStep.getRun());
     for (String run : runnerJobStep.getRun()) {
       cmd.add(runnerTaskConfigService.compile(run, context.toThymeleafContext()));
@@ -125,7 +129,11 @@ public class DockerContainerActionsService implements ContainerActionsService {
     }
   }
 
-  public String cloneRepoUsingContainer(RunnerAction action){
+  /**
+   * Clone the specified RunnerAction repository 
+   * @param action
+   */
+  public String cloneRepoUsingContainer(RunnerAction action) {
     DockerClient client = docker.client();
 
     // ---- CREIAMO ED ESEGUIAMO IL CONTAINER --------------------------
@@ -138,19 +146,19 @@ public class DockerContainerActionsService implements ContainerActionsService {
     client.waitContainerCmd(container.getId()).exec(resultCallback);
     InspectContainerResponse containerInfo = client.inspectContainerCmd(container.getId()).exec();
 
-    // ---- AGGIORNIAMO IL CONTEXT CON LE MOUNTS  ------------------------
+    // ---- AGGIORNIAMO IL CONTEXT CON LE MOUNTS ------------------------
     List<Mount> mounts = DockerServiceUtils.mounts(containerInfo, Map.of("repository", "/repo"));
     ContextService.addMountsToContext(action.getContext(), mounts);
 
     return containerInfo.getId();
-  } 
+  }
 
   @Override
   public RunnerContext runActionInContainer(RunnerAction action) {
 
     // ---- AGGIORNIAMO IL CONTEXT DELL'ACTION --------------------------
     ContextService.setVariablesOfContextFor(action);
-    //TODO: ContexService.updateGlobalMounts
+    // TODO: ContexService.updateGlobalMounts
     return null;
   }
 
@@ -164,14 +172,18 @@ public class DockerContainerActionsService implements ContainerActionsService {
     DockerClient client = docker.client();
 
     // ---- COMPILIAMO IL TEMPLATE DEL DOCKER SERVICE --------------------------
-    Resource serviceConfigTemplate = resourceLoader
-        .getResource("classpath:templates/default_docker_service.config.json");
-    String serviceConfig = new String(Files.readAllBytes(serviceConfigTemplate.getFile().toPath()));
-    logger.debug("Loaded Docker service config template from {} with value: {}",
-        serviceConfigTemplate.getFile().toPath(), serviceConfig);
+    // Resource serviceConfigTemplate = resourceLoader
+    // .getResource("classpath:templates/default_docker_service.config.json");
+    // String serviceConfig = new
+    // String(Files.readAllBytes(serviceConfigTemplate.getFile().toPath()));
+    // logger.debug("Loaded Docker service config template from {} with value: {}",
+    // serviceConfigTemplate.getFile().toPath(), serviceConfig);
 
-    // ---- CREA IL DOCKER SERVICE --------------------------
-    String compiledConfig = runnerTaskConfigService.compile(serviceConfig, action.getContext().toThymeleafContext());
+    // // ---- CREA IL DOCKER SERVICE --------------------------
+    // String compiledConfig = runnerTaskConfigService.compile(serviceConfig,
+    // action.getContext().toThymeleafContext());
+    String compiledConfig = runnerTaskConfigService.process("default_docker_service.config",
+        action.getContext().toThymeleafContext(appContext));
     logger.debug("Compiled Docker service config template: {}", compiledConfig);
     ServiceSpec spec = mapper.readValue(compiledConfig, ServiceSpec.class);
     CreateServiceResponse serviceResponse = client.createServiceCmd(spec).exec();
