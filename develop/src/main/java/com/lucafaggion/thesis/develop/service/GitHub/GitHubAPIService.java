@@ -92,7 +92,6 @@ public class GitHubAPIService {
     // Aggiungiamo dati al context
     contextService.getContext().setVariable(ContextService.REPO_USER, repoUserAndName[0]);
     contextService.getContext().setVariable(ContextService.REPO_NAME, repoUserAndName[1]);
-    contextService.getContext().setVariable(ContextService.REPO_HOST, serviceHost);
 
     // Aggiungiamo il token al context
     SearchUserAssociatedByUsernameAndService search = SearchUserAssociatedByUsernameAndService.builder().username(repoUserAndName[0])

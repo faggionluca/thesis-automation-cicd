@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -102,7 +101,7 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
 
   @Test
   void shouldExecuteTheGraph()
-      throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
+      throws Exception {
     List<String> executionExpectedResult = List.of("Explore-GitHub-Actions", "Dependent-Task1", "Dependent-Task2",
         "Dependent-Task3", "Final-task");
     List<String> executionExpectedResult_variant = List.of("Explore-GitHub-Actions", "Dependent-Task1",
@@ -136,7 +135,7 @@ public class RunnableGraphServiceIntegrationTest extends UnitTestFixtures {
 
   @Test
   void shouldCorrectlyExecuteTheGraphWithErrors()
-      throws JsonMappingException, JsonProcessingException, InterruptedException, ExecutionException {
+      throws Exception {
     Mockito.when(containerActionsService.runActionInContainer(Mockito.any())).thenAnswer(new Answer<RunnerContext>() {
       @Override
       public RunnerContext answer(InvocationOnMock invocation) throws Exception {

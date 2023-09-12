@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.MountType;
 import com.lucafaggion.thesis.develop.model.RunnerContext;
@@ -13,7 +16,7 @@ import com.lucafaggion.thesis.develop.service.ContextService;
 public class DockerServiceUtils {
   // private Set<InspectContainerResponse> linkedContainers;
 
-
+  private final static Logger logger = LoggerFactory.getLogger(DockerServiceUtils.class);
   /**
    * Extract the List of mounts from a container to Link them to another
    * @param container
@@ -24,12 +27,12 @@ public class DockerServiceUtils {
 
     List<com.github.dockerjava.api.model.Mount> res = container.getMounts().stream().filter((mount) -> declaredMounts.containsValue(mount.getDestination().getPath()))
         .map((mount) -> new com.github.dockerjava.api.model.Mount()
-            .withSource(mount.getSource()).withTarget(mount.getDestination().getPath())
+            .withSource(mount.getName()).withTarget(mount.getDestination().getPath())
             .withType(MountType.VOLUME))
         .collect(Collectors.toList());
+    logger.debug("Extracted mounts: {}, from {}", res, container.getMounts());
     return res;
   }
-
 
   /**
    * Creates the CMD Array for cloning the repo using a HelperContainer (gitcredhelper)

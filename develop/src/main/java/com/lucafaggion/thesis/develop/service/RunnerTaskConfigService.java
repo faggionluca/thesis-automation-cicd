@@ -28,16 +28,16 @@ public class RunnerTaskConfigService {
   private SpringTemplateEngine templateEngine;
 
   public String compile(byte[] configTemplate, Context context) {
-    return this.compile(new String(configTemplate), context);
+    return compile(new String(configTemplate), context);
   }
 
   public String compile(String configTemplate, Context context) {
-    return this.templateEngine.process(configTemplate, context);
+    return templateEngine.process(configTemplate, context);
   }
 
   public String compile(File configPath, Context context) throws IOException {
     String template = Files.readString(configPath.toPath());
-    return this.compile(template, context);
+    return compile(template, context);
   }
 
   /**

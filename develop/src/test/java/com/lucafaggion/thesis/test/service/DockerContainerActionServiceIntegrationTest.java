@@ -3,11 +3,13 @@ package com.lucafaggion.thesis.test.service;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +21,18 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.WaitContainerResultCallback;
 import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.TaskStatusContainerStatus;
+import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.rholder.retry.RetryException;
 import com.lucafaggion.thesis.develop.config.AppConfig;
 import com.lucafaggion.thesis.develop.config.TemplateEngineConfig;
@@ -40,13 +40,16 @@ import com.lucafaggion.thesis.develop.config.converters.MountConverter;
 import com.lucafaggion.thesis.develop.model.Repo;
 import com.lucafaggion.thesis.develop.model.RepoPushEvent;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
+import com.lucafaggion.thesis.develop.model.RunnerContext;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerTaskConfig;
 import com.lucafaggion.thesis.develop.model.GitHub.GitHubPushEvent;
+import com.lucafaggion.thesis.develop.service.ContainerService;
 import com.lucafaggion.thesis.develop.service.ContextService;
 import com.lucafaggion.thesis.develop.service.DockerContainerActionsService;
 import com.lucafaggion.thesis.develop.service.DockerService;
 import com.lucafaggion.thesis.develop.service.RunnerTaskConfigService;
+import com.lucafaggion.thesis.develop.util.DockerServiceUtils;
 import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 import lombok.Data;
@@ -62,17 +65,17 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
   @Autowired
   ApplicationContext appContext;
 
-  @Autowired
-  ResourceLoader resourceLoader;
+  // @Autowired
+  // ResourceLoader resourceLoader;
 
   @Autowired
-  DockerContainerActionsService containerActionsService;
+  private DockerContainerActionsService containerActionsService;
 
   @Autowired
   protected RunnerTaskConfigService runnerTaskConfigService;
 
   @Autowired
-  ContextService contextService;
+  private ContextService contextService;
 
   @Autowired
   @Qualifier("yamlObjectMapper")
@@ -86,16 +89,14 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
   protected RunnerAction runnerActionSingle;
 
   @Autowired
-  GenericConversionService conversionService;
-
-  @Autowired
-  Converter<Mount, String> converter;
-
-  @Autowired
   TemplateEngine templateEngine;
 
   @Autowired
-  SpringResourceTemplateResolver nonWebTemplateResolver;
+  private ContainerService<DockerClient, DockerHttpClient> docker;
+
+  private List<String> helperContainerList;
+
+  private String serviceId;
 
   @Data
   protected class ContextTestObject {
@@ -141,6 +142,27 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
         .job((RunnerJob) runnerTaskConfigSingleJob.getJobs().values().toArray()[0])
         .context(contextService.getContext())
         .build();
+    
+    helperContainerList = new LinkedList<>();
+  }
+
+  @AfterEach
+  void cleanUpDockerContainerActionServiceIntegrationTest() {
+    helperContainerList.stream().forEach((containerId) -> {
+      WaitContainerResultCallback callback = new WaitContainerResultCallback();
+      docker.client().waitContainerCmd(containerId).exec(callback);
+      try {
+        callback.awaitCompletion();
+        docker.client().removeContainerCmd(containerId).exec();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    });
+    if (serviceId != null) {
+      ((List<Mount>) runnerAction.getContext().getVariableAs(ContextService.CONTAINER_MOUNTS)).stream()
+          .forEach((mount) -> docker.client().removeVolumeCmd(mount.getSource()));
+      containerActionsService.shutDownService(serviceId);
+    }
   }
 
   @Test
@@ -152,24 +174,22 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
 
   @Test
   void testCreationOfService() throws IOException, InterruptedException {
-    String serviceId = containerActionsService.createService(runnerAction);
+    serviceId = containerActionsService.createService(runnerAction);
 
     assertNotNull(serviceId, "The service should be created");
     TimeUnit.MILLISECONDS.sleep(5000);
-    containerActionsService.shutDownService(serviceId);
   }
 
   @Test
   void shouldBeAbleToRetriveTheContainer()
       throws ExecutionException, RetryException, IOException, InterruptedException {
-    String serviceId = containerActionsService.createService(runnerAction);
+    serviceId = containerActionsService.createService(runnerAction);
     TaskStatusContainerStatus containerStatus = containerActionsService.retriveContainerOfService(serviceId);
 
     assertNotNull(serviceId, "The service should be created");
     assertNotNull(containerStatus, "The containerStatus should be not null");
 
     TimeUnit.MILLISECONDS.sleep(5000);
-    containerActionsService.shutDownService(serviceId);
   }
 
   @Test
@@ -185,8 +205,6 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
       containerActionsService.shutDownService(serviceId);
       throw e;
     }
-
-    containerActionsService.shutDownService(serviceId);
   }
 
   @Test
@@ -201,8 +219,6 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
       containerActionsService.shutDownService(serviceId);
       throw e;
     }
-
-    containerActionsService.shutDownService(serviceId);
   }
 
   @Test
@@ -210,28 +226,72 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     List<Mount> mounts = List.of(new Mount().withTarget("/repo").withSource("source-vol").withType(MountType.VOLUME),
         new Mount().withTarget("/test").withSource("source-test").withType(MountType.VOLUME));
 
-    Resource serviceConfigTemplate = resourceLoader
-        .getResource("classpath:templates/default_docker_service.config.json");
-    String serviceConfig = new String(Files.readAllBytes(serviceConfigTemplate.getFile().toPath()));
-
     ContextService.setVariablesOfContextFor(runnerAction);
     ContextService.addMountsToContext(runnerAction.getContext(), mounts);
 
     System.out.println(runnerAction.getContext().toString());
     System.out.println(runnerAction.getContext().getVariable(ContextService.CONTAINER_MOUNTS));
 
-    // conversionService.addConverter(converter);
-    System.out.println(conversionService.canConvert(Mount.class, String.class));
-
-    String compiledTemplate_tmp = templateEngine.process("default_docker_service.config",
-        runnerAction.getContext().toThymeleafContext(appContext));
-    String compiledTemplate = runnerTaskConfigService.compile(serviceConfig,
+    String compiledTemplate = templateEngine.process("default_docker_service.config",
         runnerAction.getContext().toThymeleafContext(appContext));
     System.out.println(compiledTemplate);
 
     ServiceSpec spec = objectMapper.readValue(compiledTemplate, ServiceSpec.class);
 
     System.out.println(spec);
+
+    assertNotNull(spec);
+  }
+
+
+  @Test
+  void cloneRepo() throws IOException, InterruptedException {
+    // String helperId = containerActionsService.cloneRepoUsingContainer(runnerAction);
+    ContextService.setVariablesOfContextFor(runnerAction);
+
+    runnerAction.getContext().setVariable(ContextService.REPO_USER, "faggionluca");
+    runnerAction.getContext().setVariable(ContextService.REPO_TOKEN, "");
+
+    System.out.println(runnerAction.getContext().getVariables());    
+
+    System.out.println(DockerServiceUtils.getCloneCMD(runnerAction.getContext()).toString());
+    // assertNotNull(helperId);
+
+    String helperId = containerActionsService.cloneRepoUsingContainer(runnerAction);
+    helperContainerList.add(helperId);
+  }
+
+  @Test
+  void usingTheRepoVolume() throws Exception {
+    ContextService.setVariablesOfContextFor(runnerAction);
+
+    runnerAction.getContext().setVariable(ContextService.REPO_USER, "faggionluca");
+    runnerAction.getContext().setVariable(ContextService.REPO_TOKEN, "");  
+
+    String helperId = containerActionsService.cloneRepoUsingContainer(runnerAction);
+
+    serviceId = containerActionsService.createService(runnerAction);
+    TaskStatusContainerStatus containerStatus = containerActionsService.retriveContainerOfService(serviceId);
+
+    if (containerStatus.getExitCodeLong() == null) {
+      throw new NoSuchElementException("The containe failed to start");
+    }
+
+    containerActionsService.execJob(containerStatus.getContainerID(), runnerAction.getJob(), runnerAction.getContext());
+
+    helperContainerList.add(helperId);
+    TimeUnit.MILLISECONDS.sleep(5000);
+  }
+
+  @Test
+  void runActionInContainer() throws Exception {
+  
+    runnerAction.getContext().setVariable(ContextService.REPO_USER, "faggionluca");
+    runnerAction.getContext().setVariable(ContextService.REPO_TOKEN, "");
+
+    RunnerContext context = containerActionsService.runActionInContainer(runnerAction);
+    
+    System.out.println(context);
   }
 
 }

@@ -36,6 +36,7 @@ public class ContextService {
   public static final String REPO_TOKEN = "token";
   public static final String REPO_HOST = "host";
   public static final String REPO_URL = "repository_url";
+  public static final String DEBUG_CONTEXTS = "DEBUG_PREVIOUS_CONTEXTS";
 
   private final RunnerContext context;
 
@@ -46,7 +47,10 @@ public class ContextService {
   public static void mergeContextOn(RunnerContext contextBase, List<RunnerContext> contextsToMerge) {
     // TODO: Eseguire un merge significativo soprattuto sui volumi dichiarati dagli
     // altri context
-    contextBase.setVariable("previous", contextsToMerge);
+    contextBase.setVariable(DEBUG_CONTEXTS, contextsToMerge);
+    contextsToMerge.forEach((context) -> {
+      ContextService.addMountsToContext(contextBase, context.getVariableAs(GLOBAL_MOUNTS));
+    });
   }
 
   public static void addMountsToContext(RunnerContext contextBase, List<Mount> mounts) {
@@ -68,7 +72,7 @@ public class ContextService {
 
     Set<String> mountNames = mounts.stream().map((mount) -> mount.getName()).collect(Collectors.toSet());
 
-    if (!contextBase.containsVariable(CONTAINER_MOUNTS)) {
+    if (!contextBase.containsVariable(GLOBAL_MOUNTS)) {
       contextBase.setVariable(GLOBAL_MOUNTS, mountNames);
       return;
     }
@@ -86,6 +90,7 @@ public class ContextService {
     action.getContext().setVariable(EVENT, action.getJob().getTaskConfig().getEvent());
     action.getContext().setVariable(REPO, action.getJob().getTaskConfig().getEvent().getRepository());
     action.getContext().setVariable(REPO_URL, action.getJob().getTaskConfig().getEvent().getRepository().getUrl());
+    action.getContext().setVariable(REPO_HOST, "*");
   }
 
 }
