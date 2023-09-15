@@ -32,6 +32,7 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.ServiceSpec;
 import com.github.dockerjava.api.model.Task;
+import com.github.dockerjava.api.model.TaskState;
 import com.github.dockerjava.api.model.TaskStatusContainerStatus;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient.Request;
@@ -99,6 +100,7 @@ public class DockerContainerActionsService implements ContainerActionsService {
         .withAttachStdin(true)
         .withAttachStdout(true)
         .withPrivileged(true)
+        .withWorkingDir("/repo")
         .withUser("root")
         .withTty(false)
         .exec();
@@ -172,18 +174,29 @@ public class DockerContainerActionsService implements ContainerActionsService {
       throw new DockerClientException("The job cannot be started");
     }
 
-    // ---- ESEGUIAMO IL JOB ---------------------------------------------
-    execJob(taskContainerStatus.getContainerID(), action.getJob(), action.getContext());
+    try {
+      // ---- ESEGUIAMO IL JOB ---------------------------------------------
+      execJob(taskContainerStatus.getContainerID(), action.getJob(), action.getContext());
+      // ---- DISTRUGGIAMO IL SERVIZIO E I CONTAINER DI HELP ----------------
+      shutDownService(serviceId);
+      removeHelpContainers(Arrays.asList(helperContainerId));
+    }catch (Exception e) {
+      shutDownService(serviceId);
+      removeHelpContainers(Arrays.asList(helperContainerId));
+      throw e;
+    }
 
-    // ---- DISTRUGGIAMO IL SERVIZIO E I CONTAINER DI HELP ----------------
-    shutDownService(serviceId);
-    removeHelpContainers(Arrays.asList(helperContainerId));
+
     return action.getContext();
   }
 
   public void removeHelpContainers(List<String> containersId) {
     DockerClient client = docker.client();
     containersId.forEach((containerId) -> client.removeContainerCmd(containerId).withRemoveVolumes(true).exec());
+  }
+
+  public void cleanUpVolumes(RunnerAction action) {
+    
   }
 
   public void shutDownService(String serviceId) {
@@ -251,16 +264,22 @@ public class DockerContainerActionsService implements ContainerActionsService {
         Response response = httpClient.execute(request);
         String responseBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
         Task task = mapper.readValue(responseBody, Task.class);
-        return task.getStatus().getContainerStatus();
+
+        logger.debug("Container {} status: {}", task.getStatus().getContainerStatus().getContainerID(), task.getStatus());
+        if (task.getStatus().getState().compareTo(TaskState.RUNNING) == 0) {
+          return task.getStatus().getContainerStatus();
+        }
+        throw new DockerClientException("Container Not Running");
       }
     };
 
     Retryer<TaskStatusContainerStatus> containerStatusRetryer = RetryerBuilder.<TaskStatusContainerStatus>newBuilder()
         .retryIfResult(Predicates.<TaskStatusContainerStatus>isNull())
         .retryIfExceptionOfType(IOException.class)
+        .retryIfExceptionOfType(DockerClientException.class)
         .retryIfRuntimeException()
         .withWaitStrategy(WaitStrategies.fibonacciWait())
-        .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(30, TimeUnit.SECONDS))
+        .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(300, TimeUnit.SECONDS))
         // .withStopStrategy(StopStrategies.stopAfterAttempt(3))
         .build();
 

@@ -58,11 +58,19 @@ public class RunnableGraphService {
     // Create the array of callable jobs
     List<RunnerAction> actions = runnerTaskConfig.getJobs().values()
         .stream()
-        .map((job) -> RunnerAction.builder()
-            .containerActionsService(containerActionsService)
-            .job(job)
-            .context(context)
-            .build())
+        .map((job) -> {
+          try {
+            return RunnerAction.builder()
+                .containerActionsService(containerActionsService)
+                .job(job)
+                .context(context.copy())
+                .build();
+          } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+          }
+        })
+        .filter(action -> action != null)
         .collect(Collectors.toList());
 
     // Construct the acyclic graph
@@ -101,6 +109,7 @@ public class RunnableGraphService {
       @Override
       public void onFailure(Throwable t) {
         logger.debug("[ERROR] on RunnerAction name: {}", action.getJob().getName());
+        logger.debug("{}", t);
       }
     }, executor);
   }

@@ -15,6 +15,7 @@ jobs:
       - run: [echo, "🍏 This job's status is [(${event.status.status})]."]
       - run: [apk, update, "&&", apk, upgrade]
       - run: [apk, add, python3]
+      - run: [ls, /repo]
   Dependent-Task1:
     depends-on: [Explore-GitHub-Actions]
     steps:

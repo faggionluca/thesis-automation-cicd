@@ -1,0 +1,11 @@
+name: Spring Framework CI/CD
+on: [push]
+jobs:
+  spring-core:
+    run-on: spring-tests
+    steps:
+      - run: [./gradlew, check, -p, "[(${job.name})]" ]
+  spring-beans:
+    run-on: spring-tests
+    steps:
+      - run: [./gradlew, check, -p, "[(${job.name})]" ]

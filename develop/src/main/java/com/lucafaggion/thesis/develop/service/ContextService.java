@@ -1,14 +1,19 @@
 package com.lucafaggion.thesis.develop.service;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.RequestScope;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerCmd;
 import com.github.dockerjava.api.model.Mount;
 import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerContext;
@@ -25,7 +30,7 @@ import lombok.Getter;
 public class ContextService {
 
   public static final String CONTAINER_MOUNTS = "mounts_internal";
-  public static final String GLOBAL_MOUNTS = "mounts_global";
+  public static final String DECLARED_OUT_MOUNTS = "mounts_output";
 
   public static final String JOB = "job";
   public static final String TASK = "task";
@@ -44,13 +49,26 @@ public class ContextService {
     this.context = new RunnerContext();
   }
 
+  public static <T> Predicate<T> distinctByKey(
+    Function<? super T, ?> keyExtractor) {
+  
+    Map<Object, Boolean> seen = new ConcurrentHashMap<>(); 
+    return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null; 
+}
+
   public static void mergeContextOn(RunnerContext contextBase, List<RunnerContext> contextsToMerge) {
     // TODO: Eseguire un merge significativo soprattuto sui volumi dichiarati dagli
     // altri context
     contextBase.setVariable(DEBUG_CONTEXTS, contextsToMerge);
-    contextsToMerge.forEach((context) -> {
-      ContextService.addMountsToContext(contextBase, context.getVariableAs(GLOBAL_MOUNTS));
-    });
+    Map<String, Mount> mergedDeclaredMounts = contextsToMerge.stream()
+        .map(context -> Optional.ofNullable((Map<String, Mount>) context.getVariableAs(DECLARED_OUT_MOUNTS)))
+        .filter(value -> value.isPresent())
+        .flatMap(m -> m.get().entrySet().stream()).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    contextBase.setVariable(DECLARED_OUT_MOUNTS, mergedDeclaredMounts);
+    ContextService.addMountsToContext(contextBase,
+        mergedDeclaredMounts.entrySet().stream().map(Entry::getValue).collect(Collectors.toList()));
+    
+    mergedDeclaredMounts.forEach((name, mount) -> contextBase.setVariable(name, mount.getTarget()));
   }
 
   public static void addMountsToContext(RunnerContext contextBase, List<Mount> mounts) {
@@ -62,27 +80,29 @@ public class ContextService {
 
     List<Mount> currentMounts = contextBase.getVariableAs(CONTAINER_MOUNTS);
     List<Mount> combined = Stream.concat(currentMounts.stream(), mounts.stream())
-        .distinct()
+        .filter(distinctByKey(mount -> mount.getTarget()))
         .collect(Collectors.toList());
     contextBase.setVariable(CONTAINER_MOUNTS, combined);
 
   }
 
-  public static void updateGlobalMounts(RunnerContext contextBase, List<InspectContainerResponse.Mount> mounts) {
+  public static void setLabelForVolumesOf(InspectContainerCmd container) {
 
-    Set<String> mountNames = mounts.stream().map((mount) -> mount.getName()).collect(Collectors.toSet());
-
-    if (!contextBase.containsVariable(GLOBAL_MOUNTS)) {
-      contextBase.setVariable(GLOBAL_MOUNTS, mountNames);
-      return;
-    }
-
-    Set<String> currentMounts = contextBase.getVariableAs(GLOBAL_MOUNTS);
-    Set<String> combined = Stream.concat(currentMounts.stream(), mountNames.stream())
-        .distinct()
-        .collect(Collectors.toSet());
-    contextBase.setVariable(GLOBAL_MOUNTS, combined);
   }
+
+  // public static void updateMountsFor(RunnerAction action) {
+  //   // Map<String, Mount> mounts = action.getJob().getOutputs().flatMap(m -> m.get().entrySet().stream()).collect(Collectors.toMap(Entry::getKey, s -> new Mount(s.getValue()...)));
+    
+  //   // ContextService.addMountsToContext(action.getContext(), mounts.entrySet().stream().map(Entry::getValue).collect(Collectors.toList()));
+  //   if (!action.getContext().containsVariable(DECLARED_OUT_MOUNTS)) {
+  //     // TODO: aggiornare il RunnerJob per dichiarare gli output Map<String, String>
+  //     // e poi convertirli in Map<String, Mount>
+  //     // action.getContext().setVariable(DECLARED_OUT_MOUNTS, mountNames);
+
+  //     return;
+  // }
+  // // TODO: merge
+  // }
 
   public static void setVariablesOfContextFor(RunnerAction action) {
     action.getContext().setVariable(JOB, action.getJob());
@@ -93,4 +113,9 @@ public class ContextService {
     action.getContext().setVariable(REPO_HOST, "*");
   }
 
+  public static List<String> getVolumesToCleanFor(RunnerAction action) {
+    // TODO: implmentare il filtraggio
+    List<Mount> mounts = action.getContext().getVariableAs(CONTAINER_MOUNTS);
+    return mounts.stream().map(mount -> mount.getSource()).collect(Collectors.toList());
+  }
 }
