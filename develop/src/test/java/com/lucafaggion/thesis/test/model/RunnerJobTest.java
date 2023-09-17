@@ -15,31 +15,31 @@ import com.lucafaggion.thesis.test.UnitTestFixtures;
 
 // Unit Tests per il POJO RunnerJobTest
 
-public class RunnerJobTest extends UnitTestFixtures {
+public class RunnerJobTest extends UnitTestFixtures { 
 
-  String config;
-  RunnerJob runnerJobOnlySteps;
+  protected String config;
+  protected RunnerJob runnerJobOnlySteps;
 
   @BeforeEach
   void SetUp() throws IOException {
-    this.config = UnitTestFixtures.loadConfig("runnerJobOnlySteps");
-    this.runnerJobOnlySteps = UnitTestFixtures.mapper.readValue(config, RunnerJob.class);
+    config = UnitTestFixtures.loadConfig("runnerJobOnlySteps");
+    runnerJobOnlySteps = UnitTestFixtures.mapper.readValue(config, RunnerJob.class);
   }
 
   @Test
   void runnerJobDeserialize() throws IOException {
 
-    assertNotNull(this.runnerJobOnlySteps, "Deserialized object must not be null");
-    assertNotNull(this.runnerJobOnlySteps.getSteps(), "getSteps must not be null");
-    assertNull(this.runnerJobOnlySteps.getId(), "getId must be null");
-    assertNull(this.runnerJobOnlySteps.getName(), "getName must be null");
-    assertEquals(Collections.emptyList(), this.runnerJobOnlySteps.getDependsOn(), "getDependsOn must be empty");
+    assertNotNull(runnerJobOnlySteps, "Deserialized object must not be null");
+    assertNotNull(runnerJobOnlySteps.getSteps(), "getSteps must not be null");
+    assertNull(runnerJobOnlySteps.getId(), "getId must be null");
+    assertNull(runnerJobOnlySteps.getName(), "getName must be null");
+    assertEquals(Collections.emptyList(), runnerJobOnlySteps.getDependsOn(), "getDependsOn must be empty");
   }
 
   @Test
   void runnerJobDeserializeAndSerialize() throws IOException {
     // Testiamo la serializzazione e deserializzazione
-    String serializedrunnerJobOnlySteps = UnitTestFixtures.mapper.writeValueAsString(this.runnerJobOnlySteps);
+    String serializedrunnerJobOnlySteps = UnitTestFixtures.mapper.writeValueAsString(runnerJobOnlySteps);
     RunnerJob runnerJobOnlyStepsLoaded = UnitTestFixtures.mapper.readValue(serializedrunnerJobOnlySteps, RunnerJob.class);
 
     assertNotNull(runnerJobOnlyStepsLoaded, "Deserialized object must not be null");

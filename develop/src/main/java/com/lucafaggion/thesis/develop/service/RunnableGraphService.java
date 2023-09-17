@@ -199,6 +199,8 @@ public class RunnableGraphService {
     }
     ListenableFuture<List<Object>> listFuture = Futures.allAsList(waitForAll);
     listFuture.get();
+    RunnerContext context = graph.vertexSet().stream().map(RunnerAction::getContext).filter(c -> c.getVariableAs(ContextService.TASK) != null).findFirst().orElse(null);
+    containerActionsService.cleanUp(context);
   }
 
   /*

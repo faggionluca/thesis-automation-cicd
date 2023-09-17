@@ -3,11 +3,13 @@ package com.lucafaggion.thesis.test.service;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -125,8 +127,10 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
 
     RunnerTaskConfig runnerTaskConfig = runnerTaskConfigService.from(UnitTestFixtures.loadConfig("runnerTaskConfig"));
     RunnerTaskConfig runnerTaskConfigSingleJob = runnerTaskConfigService
-        .from(UnitTestFixtures.loadConfig("runnerTaskConfigSingleJob"));
+    .from(UnitTestFixtures.loadConfig("runnerTaskConfigSingleJob"));
+    runnerTaskConfigSingleJob.setId(BigInteger.valueOf(1542));
     runnerTaskConfigSingleJob.setEvent(repoPushEvent);
+    runnerTaskConfig.setId(BigInteger.valueOf(1542));
     runnerTaskConfig.setEvent(repoPushEvent);
 
     contextService.getContext().setVariable("user", new ContextTestObject());
@@ -147,21 +151,22 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
   }
 
   @AfterEach
-  void cleanUpDockerContainerActionServiceIntegrationTest() {
+  void cleanUpDockerContainerActionServiceIntegrationTest() throws InterruptedException {
     helperContainerList.stream().forEach((containerId) -> {
       WaitContainerResultCallback callback = new WaitContainerResultCallback();
       docker.client().waitContainerCmd(containerId).exec(callback);
       try {
         callback.awaitCompletion();
-        docker.client().removeContainerCmd(containerId).exec();
+        docker.client().removeContainerCmd(containerId).withRemoveVolumes(true).exec();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     });
     if (serviceId != null) {
-      ((List<Mount>) runnerAction.getContext().getVariableAs(ContextService.CONTAINER_MOUNTS)).stream()
-          .forEach((mount) -> docker.client().removeVolumeCmd(mount.getSource()));
       containerActionsService.shutDownService(serviceId);
+      TimeUnit.MILLISECONDS.sleep(20000);
+      ((List<Mount>) runnerAction.getContext().getVariableAs(ContextService.CONTAINER_MOUNTS)).stream()
+          .forEach((mount) -> docker.client().removeVolumeCmd(mount.getSource()).exec());
     }
   }
 
@@ -274,7 +279,7 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     TaskStatusContainerStatus containerStatus = containerActionsService.retriveContainerOfService(serviceId);
 
     if (containerStatus.getExitCodeLong() == null) {
-      throw new NoSuchElementException("The containe failed to start");
+      throw new NoSuchElementException("The container failed to start");
     }
 
     containerActionsService.execJob(containerStatus.getContainerID(), runnerAction.getJob(), runnerAction.getContext());
@@ -292,6 +297,20 @@ public class DockerContainerActionServiceIntegrationTest extends UnitTestFixture
     RunnerContext context = containerActionsService.runActionInContainer(runnerAction);
     
     System.out.println(context);
+  }
+
+  @Test
+  void shouldCorrectlyCleanUp() {
+
+    ContextService.setVariablesOfContextFor(runnerAction);
+
+    DockerClient client = docker.client();
+    List<String> mountNames = List.of("volume_1", "volume_2", "volume_3");
+    mountNames.forEach((name) -> client.createVolumeCmd().withName(name).withLabels(ContextService.volumeLabelsFor(runnerAction.getContext())).exec());
+    List<Mount> mounts = mountNames.stream().map((name) -> new Mount().withType(MountType.VOLUME).withTarget("/target").withSource(name)).collect(Collectors.toList());
+    ContextService.addMountsToContext(runnerAction.getContext(), mounts);
+
+    containerActionsService.cleanUp(runnerAction.getContext());
   }
 
 }

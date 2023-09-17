@@ -5,4 +5,5 @@ import com.lucafaggion.thesis.develop.model.RunnerContext;
 
 public interface ContainerActionsService {
   public RunnerContext runActionInContainer(RunnerAction action) throws Exception;
+  public void cleanUp(RunnerContext context);
 }
