@@ -3,6 +3,8 @@ package com.lucafaggion.thesis.test.service;
 import java.math.BigInteger;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
@@ -31,6 +33,8 @@ import com.lucafaggion.thesis.common.model.UserAssociatedAccount;
 @ComponentScan(basePackages = { "com.lucafaggion.thesis.develop", "com.lucafaggion.thesis.common.config" })
 public class AppServiceTestConfiguration {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceTestConfiguration.class);
+
   /**
    * Mock per le Queue di RabbitMQ (org.springframework.amqp)
    */
@@ -56,4 +60,23 @@ public class AppServiceTestConfiguration {
       return null;
     }
   }
+
+  // @EventListener
+  // public void handleContextRefresh(ContextRefreshedEvent event) {
+  //     final Environment env = event.getApplicationContext()
+  //                                  .getEnvironment();
+
+  //     LOGGER.info("Active profiles: {}", Arrays.toString(env.getActiveProfiles()));
+
+  //     final MutablePropertySources sources = ((AbstractEnvironment) env).getPropertySources();
+
+  //     StreamSupport.stream(sources.spliterator(), false)
+  //                  .filter(ps -> ps instanceof EnumerablePropertySource)
+  //                  .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
+  //                  .flatMap(Arrays::stream)
+  //                  .distinct()
+  //                  .filter(prop -> !(prop.contains("credentials") || prop.contains("password")))
+  //                  .forEach(prop -> LOGGER.info("{}: {}", prop, env.getProperty(prop)));
+  // }
+
 }

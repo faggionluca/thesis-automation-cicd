@@ -7,8 +7,10 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -61,4 +63,8 @@ public class RunnerJobStep {
     this.logs.add(log);
     log.setStep(this);
   }
+
+  @Embedded
+  @Builder.Default
+  private CurrentStatus status = ExceptionStatusUtils.defaultStatus();
 }

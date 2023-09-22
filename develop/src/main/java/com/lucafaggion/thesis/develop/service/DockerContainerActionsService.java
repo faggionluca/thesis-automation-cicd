@@ -56,8 +56,10 @@ import com.lucafaggion.thesis.develop.model.RunnerAction;
 import com.lucafaggion.thesis.develop.model.RunnerContext;
 import com.lucafaggion.thesis.develop.model.RunnerJob;
 import com.lucafaggion.thesis.develop.model.RunnerJobStep;
+import com.lucafaggion.thesis.develop.repository.RunnerJobRepository;
 import com.lucafaggion.thesis.develop.service.exceptions.RunnerJobStepExecutionException;
 import com.lucafaggion.thesis.develop.util.DockerServiceUtils;
+import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 @Service
 public class DockerContainerActionsService implements ContainerActionsService {
@@ -78,6 +80,9 @@ public class DockerContainerActionsService implements ContainerActionsService {
 
   @Autowired
   ObjectMapper mapper;
+
+  @Autowired
+  RunnerJobRepository runnerJobRepository;
 
   private static final String REPOSITORY_FS_PATH = "/repo";
   private static final String GIT_HELPER_IMAGENAME = "githelper";
@@ -128,15 +133,17 @@ public class DockerContainerActionsService implements ContainerActionsService {
   }
 
   public void execJob(String containerId, RunnerJob runnerJob, RunnerContext context) throws Exception {
-    try {
-      for (RunnerJobStep step : runnerJob.getSteps()) {
+    for (RunnerJobStep step : runnerJob.getSteps()) {
+      try {
         long result = execJobTask(containerId, step, context);
         logger.debug("RunnerJobStep result: {}", result);
+      } catch (Exception e) {
+        // TODO: handle exception an save ERORRS
+        step.setStatus(ExceptionStatusUtils.fromThrowable(e));
+
+        logger.error("[ERROR] RunnerJobStep resulted in an error: {}", e.getMessage());
+        throw e;
       }
-    } catch (Exception e) {
-      // TODO: handle exception an save ERORRS
-      logger.error("[ERROR] RunnerJobStep resulted in an error: {}", e.getMessage());
-      throw e;
     }
   }
 
@@ -206,6 +213,10 @@ public class DockerContainerActionsService implements ContainerActionsService {
     } catch (Exception e) {
       shutDownService(serviceId);
       removeHelpContainers(Arrays.asList(helperContainerId));
+
+      action.getJob().setStatus(ExceptionStatusUtils.fromThrowable(e));
+      runnerJobRepository.save(action.getJob());
+      
       throw e;
     }
 

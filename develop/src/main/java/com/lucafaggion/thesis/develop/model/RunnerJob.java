@@ -10,8 +10,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lucafaggion.thesis.develop.util.ExceptionStatusUtils;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -69,6 +72,7 @@ public class RunnerJob {
     this.steps = runnerJobSteps;
   }
 
+  @ElementCollection
   @Builder.Default
   private Map<String, String> outputs = new HashMap<String, String>();
 
@@ -76,4 +80,8 @@ public class RunnerJob {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "runner_task_config_id")
   private RunnerTaskConfig taskConfig;
+
+  @Embedded
+  @Builder.Default
+  private CurrentStatus status = ExceptionStatusUtils.defaultStatus();
 }
